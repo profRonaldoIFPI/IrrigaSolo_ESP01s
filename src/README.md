@@ -12,6 +12,7 @@ Este diretório contém os arquivos de implementação (`.cpp`) do firmware Irri
 | [persistencia.cpp](persistencia.cpp) | Leitura/escrita de JSON no LittleFS (ADR-004). |
 | [redeWifi.cpp](redeWifi.cpp) | Gerenciamento de Wi-Fi AP/STA com fallback (RF2). |
 | [relogioNtp.cpp](relogioNtp.cpp) | Sincronização NTP e formatação de data/hora (RF1.2). |
+| [agendador.cpp](agendador.cpp) | Motor de agendamento com validação de conflitos (ADR-005, ADR-006). |
 
 > **Nota:** Novos módulos (`.cpp`) serão adicionados conforme as etapas de implementação avançam.
 

@@ -13,6 +13,7 @@ Este diretório contém os arquivos de cabeçalho (`.h`) com declarações de fu
 | [persistencia.h](persistencia.h) | Interface do módulo de persistência LittleFS (leitura/escrita JSON). |
 | [redeWifi.h](redeWifi.h) | Interface do módulo de gerenciamento Wi-Fi (AP/STA). |
 | [relogioNtp.h](relogioNtp.h) | Interface do módulo de sincronização NTP. |
+| [agendador.h](agendador.h) | Interface do motor de agendamento (Scheduler). |
 | `README` | Guia original do PlatformIO (mantido para referência). |
 
 > **Nota:** Headers e HTMLs serão adicionados conforme as etapas de implementação avançam.

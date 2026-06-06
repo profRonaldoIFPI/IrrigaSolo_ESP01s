@@ -41,10 +41,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Commit da Etapa 5
 
 ## Etapa 6 — Motor de Agendamento (Scheduler)
-- [ ] Criar `include/agendador.h`
-- [ ] Criar `src/agendador.cpp`
-- [ ] Atualizar READMEs de `/src` e `/include`
-- [ ] Commit da Etapa 6
+- [x] Criar `include/agendador.h`
+- [x] Criar `src/agendador.cpp`
+- [x] Atualizar READMEs de `/src` e `/include`
+- [x] Commit da Etapa 6
 
 ## Etapa 7 — Servidor Web e Interface HTML
 - [ ] Criar `include/servidorWeb.h`
