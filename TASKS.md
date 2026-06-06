@@ -17,10 +17,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Commit da Etapa 1
 
 ## Etapa 2 — Definições de Hardware e Estruturas de Dados
-- [ ] Criar `include/pinosHardware.h` (constantes GPIO e defaults)
-- [ ] Criar `include/estruturas.h` (structs de configuração)
-- [ ] Atualizar `include/README.md`
-- [ ] Commit da Etapa 2
+- [x] Criar `include/pinosHardware.h` (constantes GPIO e defaults)
+- [x] Criar `include/estruturas.h` (structs de configuração)
+- [x] Atualizar `include/README.md`
+- [x] Commit da Etapa 2
 
 ## Etapa 3 — Persistência LittleFS (Leitura/Escrita JSON)
 - [ ] Criar `include/persistencia.h`
