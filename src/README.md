@@ -13,6 +13,7 @@ Este diretório contém os arquivos de implementação (`.cpp`) do firmware Irri
 | [redeWifi.cpp](redeWifi.cpp) | Gerenciamento de Wi-Fi AP/STA com fallback (RF2). |
 | [relogioNtp.cpp](relogioNtp.cpp) | Sincronização NTP e formatação de data/hora (RF1.2). |
 | [agendador.cpp](agendador.cpp) | Motor de agendamento com validação de conflitos (ADR-005, ADR-006). |
+| [servidorWeb.cpp](servidorWeb.cpp) | Servidor HTTP com endpoints e páginas PROGMEM. |
 
 > **Nota:** Novos módulos (`.cpp`) serão adicionados conforme as etapas de implementação avançam.
 

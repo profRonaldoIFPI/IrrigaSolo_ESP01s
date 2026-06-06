@@ -1,0 +1,360 @@
+#pragma once
+
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IrrigaSolo - Dashboard</title>
+    <meta name="description" content="Painel de controle do sistema de irrigação automatizado IrrigaSolo.">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
+            --glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at top, #1e293b, #0f172a);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover { border-color: rgba(16, 185, 129, 0.3); }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+        .status-label { color: var(--text-secondary); font-weight: 500; }
+
+        .status-value { font-weight: 600; font-size: 1.1rem; }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-connected {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-disconnected {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .datetime-display { text-align: center; }
+
+        .time-large {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            line-height: 1.1;
+        }
+
+        .date-sub {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .channel-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .channel-info { display: flex; flex-direction: column; }
+
+        .channel-name { font-size: 1.1rem; font-weight: 600; }
+
+        .channel-status { font-size: 0.85rem; margin-top: 3px; }
+
+        .status-on {
+            color: var(--primary);
+            font-weight: 600;
+            text-shadow: var(--glow-green);
+        }
+
+        .status-off { color: var(--text-secondary); }
+
+        .btn-group { display: flex; gap: 8px; }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-on { background-color: var(--primary); color: #ffffff; }
+
+        .btn-on:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--glow-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-off { background-color: var(--danger); color: #ffffff; }
+
+        .btn-off:hover {
+            background-color: var(--danger-hover);
+            box-shadow: var(--glow-red);
+            transform: translateY(-1px);
+        }
+
+        button:active { transform: translateY(1px); }
+
+        .nav-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .nav-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-btn:hover {
+            border-color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="titulo_dashboard">IrrigaSolo</h1>
+            <div class="subtitle" id="subtitulo_dashboard">Painel de Controle de Irrigação</div>
+        </header>
+
+        <!-- Relógio do Sistema -->
+        <div class="card datetime-display" id="card_relogio">
+            <div class="time-large" id="lbl_hora">00:00:00</div>
+            <div class="date-sub" id="lbl_data">-- de -- de ----</div>
+        </div>
+
+        <!-- Status do Sistema -->
+        <div class="card" id="card_status">
+            <div class="status-row">
+                <span class="status-label">Conexão Wi-Fi</span>
+                <span class="status-value" id="status_wifi">
+                    <span class="status-badge badge-connected" id="badge_wifi">Conectado</span>
+                </span>
+            </div>
+            <div class="status-row">
+                <span class="status-label">IP do Dispositivo</span>
+                <span class="status-value" id="val_ip">0.0.0.0</span>
+            </div>
+        </div>
+
+        <!-- Controle de Canais -->
+        <div class="card" id="card_controles">
+            <h3 style="margin-bottom: 15px; font-weight: 600;">Controle Canais</h3>
+
+            <!-- Canal 1 -->
+            <div class="channel-control" id="controle_c1">
+                <div class="channel-info">
+                    <span class="channel-name">Canal 1</span>
+                    <span class="channel-status" id="lbl_status_c1">Status: <span class="status-off" id="val_status_c1">Desligado</span></span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-on" id="btn_c1_ligar" onclick="controlarCanal(1, 1)">Ligar</button>
+                    <button class="btn-off" id="btn_c1_desligar" onclick="controlarCanal(1, 0)">Desligar</button>
+                </div>
+            </div>
+
+            <!-- Canal 2 -->
+            <div class="channel-control" id="controle_c2">
+                <div class="channel-info">
+                    <span class="channel-name">Canal 2</span>
+                    <span class="channel-status" id="lbl_status_c2">Status: <span class="status-off" id="val_status_c2">Desligado</span></span>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-on" id="btn_c2_ligar" onclick="controlarCanal(2, 1)">Ligar</button>
+                    <button class="btn-off" id="btn_c2_desligar" onclick="controlarCanal(2, 0)">Desligar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Links de Navegação -->
+        <div class="nav-links">
+            <a href="/horarios" class="nav-btn" id="link_horarios">📅 Agendamentos</a>
+            <a href="/config" class="nav-btn" id="link_config">⚙️ Conexão & NTP</a>
+        </div>
+
+        <footer>IrrigaSolo v1.0 • Baseado em ESP8266</footer>
+    </div>
+
+    <script>
+        /**
+         * Atualiza os dados dinâmicos do Dashboard via Fetch API.
+         * Consome GET /api/status a cada 2 segundos sem recarregar a página.
+         */
+        function atualizarStatus() {
+            fetch('/api/status')
+                .then(function(resposta) { return resposta.json(); })
+                .then(function(dados) {
+                    document.getElementById('lbl_hora').innerText = dados.time || '00:00:00';
+                    document.getElementById('lbl_data').innerText = dados.date || '-- de -- de ----';
+
+                    var badgeWifi = document.getElementById('badge_wifi');
+                    if (dados.wifiConnected) {
+                        badgeWifi.innerText = 'Conectado';
+                        badgeWifi.className = 'status-badge badge-connected';
+                    } else {
+                        badgeWifi.innerText = 'Modo AP';
+                        badgeWifi.className = 'status-badge badge-disconnected';
+                    }
+
+                    document.getElementById('val_ip').innerText = dados.ip || '0.0.0.0';
+
+                    // Atualizar estado do Canal 1
+                    var statusC1 = document.getElementById('val_status_c1');
+                    if (dados.c1State) {
+                        statusC1.innerText = 'Ligado';
+                        statusC1.className = 'status-on';
+                    } else {
+                        statusC1.innerText = 'Desligado';
+                        statusC1.className = 'status-off';
+                    }
+
+                    // Atualizar estado do Canal 2
+                    var statusC2 = document.getElementById('val_status_c2');
+                    if (dados.c2State) {
+                        statusC2.innerText = 'Ligado';
+                        statusC2.className = 'status-on';
+                    } else {
+                        statusC2.innerText = 'Desligado';
+                        statusC2.className = 'status-off';
+                    }
+                })
+                .catch(function(erro) { console.error('Erro ao obter status:', erro); });
+        }
+
+        /**
+         * Envia comando de controle manual via POST /api/control.
+         * Não interfere na programação automática (RF4.1).
+         */
+        function controlarCanal(canal, estado) {
+            fetch('/api/control?channel=' + canal + '&state=' + estado, { method: 'POST' })
+                .then(function(resposta) {
+                    if (resposta.ok) {
+                        atualizarStatus();
+                    } else {
+                        alert('Erro ao enviar comando.');
+                    }
+                })
+                .catch(function(erro) { console.error('Erro no controle manual:', erro); });
+        }
+
+        // Polling a cada 2 segundos para atualização em tempo real
+        setInterval(atualizarStatus, 2000);
+        // Atualização inicial ao carregar a página
+        window.onload = atualizarStatus;
+    </script>
+</body>
+</html>
+
+)rawliteral";

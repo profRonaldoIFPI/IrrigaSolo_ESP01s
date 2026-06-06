@@ -47,13 +47,13 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Commit da Etapa 6
 
 ## Etapa 7 — Servidor Web e Interface HTML
-- [ ] Criar `include/servidorWeb.h`
-- [ ] Criar `src/servidorWeb.cpp`
-- [ ] Criar `include/index.html` (Dashboard)
-- [ ] Criar `include/horarios.html` (Agendamentos)
-- [ ] Criar `include/config.html` (Rede & NTP)
-- [ ] Atualizar READMEs de `/src` e `/include`
-- [ ] Commit da Etapa 7
+- [x] Criar `include/servidorWeb.h`
+- [x] Criar `src/servidorWeb.cpp`
+- [x] Criar `include/index.html` (Dashboard)
+- [x] Criar `include/horarios.html` (Agendamentos)
+- [x] Criar `include/config.html` (Rede & NTP)
+- [x] Atualizar READMEs de `/src` e `/include`
+- [x] Commit da Etapa 7
 
 ## Etapa 8 — Integração Final no `main.cpp`
 - [ ] Implementar `setup()` com sequência ADR-007

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IrrigaSolo - Programação</title>
+    <meta name="description" content="Configuração de horários de irrigação do sistema IrrigaSolo.">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --danger: #ef4444;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: radial-gradient(circle at top, #1e293b, #0f172a);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container { width: 100%; max-width: 650px; margin-top: 20px; }
+
+        header { text-align: center; margin-bottom: 30px; }
+
+        h1 {
+            font-size: 2.2rem; font-weight: 700;
+            background: linear-gradient(to right, #10b981, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .subtitle { color: var(--text-secondary); font-size: 0.95rem; }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            font-size: 1.25rem; margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+            color: var(--text-primary);
+        }
+
+        .table-responsive { width: 100%; overflow-x: auto; margin-bottom: 20px; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+
+        th {
+            padding: 10px; font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        input[type="time"] {
+            padding: 6px 10px; border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary); font-size: 0.95rem;
+            outline: none; width: 100%; max-width: 130px;
+        }
+
+        input[type="number"] {
+            padding: 6px 10px; border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary); font-size: 0.95rem;
+            outline: none; width: 100%; max-width: 80px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px; height: 18px;
+            accent-color: var(--primary); cursor: pointer;
+        }
+
+        .option-group {
+            display: flex; align-items: center; gap: 20px;
+            margin-top: 10px; padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .option-label { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
+
+        .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+        .radio-item input[type="radio"] {
+            accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;
+        }
+
+        .btn-submit {
+            width: 100%; padding: 14px;
+            background-color: var(--primary); color: #ffffff;
+            border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--glow-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active { transform: translateY(1px); }
+
+        .btn-submit:disabled {
+            background-color: #475569; cursor: not-allowed;
+            transform: none; box-shadow: none;
+        }
+
+        .msg-feedback {
+            text-align: center; padding: 10px; margin-top: 10px;
+            border-radius: 8px; font-weight: 600; display: none;
+        }
+
+        .msg-sucesso {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .msg-erro {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .nav-back {
+            display: flex; justify-content: center; align-items: center;
+            padding: 12px; background: transparent;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            color: var(--text-secondary); text-decoration: none;
+            font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .nav-back:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        footer { margin-top: 40px; text-align: center; color: var(--text-secondary); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="titulo_horarios">Programação de Irrigação</h1>
+            <div class="subtitle" id="subtitulo_horarios">Defina os horários e durações de cada canal</div>
+        </header>
+
+        <!-- Canal 1 -->
+        <div class="card" id="card_c1_agendamentos">
+            <h2>Canal 1</h2>
+            <div class="table-responsive">
+                <table id="tbl_c1">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Ativo</th>
+                            <th style="width: 45%;">Horário de Início</th>
+                            <th style="width: 40%;">Duração (min)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_c1"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Canal 2 -->
+        <div class="card" id="card_c2_agendamentos">
+            <h2>Canal 2</h2>
+            <div class="table-responsive">
+                <table id="tbl_c2">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Ativo</th>
+                            <th style="width: 45%;">Horário de Início</th>
+                            <th style="width: 40%;">Duração (min)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_c2"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Simultaneidade -->
+        <div class="card" id="card_simultaneidade">
+            <span class="option-label" id="lbl_simultaneidade">Permitir abertura simultânea dos canais?</span>
+            <div class="option-group" id="grupo_simultaneidade">
+                <label class="radio-item" id="lbl_sim_sim">
+                    <input type="radio" name="permitirSimultaneidade" id="sim_sim" value="1"> Sim
+                </label>
+                <label class="radio-item" id="lbl_sim_nao">
+                    <input type="radio" name="permitirSimultaneidade" id="sim_nao" value="0" checked> Não
+                </label>
+            </div>
+        </div>
+
+        <!-- Mensagem de feedback -->
+        <div class="msg-feedback" id="msg_feedback"></div>
+
+        <button class="btn-submit" id="btn_salvar_horarios" onclick="salvarAgendamentos()" style="margin-bottom: 20px;">
+            Salvar Programação
+        </button>
+
+        <a href="/" class="nav-back" id="link_voltar_painel">⬅ Voltar ao Painel</a>
+
+        <footer>IrrigaSolo v1.0 • Baseado em ESP8266</footer>
+    </div>
+
+    <script>
+        var TOTAL_SLOTS = 6;
+
+        /**
+         * Gera dinamicamente as linhas da tabela de horários.
+         * Evita duplicação de HTML estático para 6 slots × 2 canais.
+         */
+        function gerarLinhasTabela() {
+            var tbodyC1 = document.getElementById('tbody_c1');
+            var tbodyC2 = document.getElementById('tbody_c2');
+
+            for (var i = 0; i < TOTAL_SLOTS; i++) {
+                tbodyC1.innerHTML += criarLinhaSlot('c1', i);
+                tbodyC2.innerHTML += criarLinhaSlot('c2', i);
+            }
+        }
+
+        function criarLinhaSlot(prefixo, indice) {
+            return '<tr>' +
+                '<td><input type="checkbox" id="' + prefixo + '_ativo_' + indice + '"></td>' +
+                '<td><input type="time" id="' + prefixo + '_inicio_' + indice + '" value="00:00"></td>' +
+                '<td><input type="number" id="' + prefixo + '_duracao_' + indice + '" value="10" min="1" max="120"></td>' +
+                '</tr>';
+        }
+
+        /**
+         * Carrega as configurações atuais do backend via GET /api/schedules.
+         */
+        function carregarAgendamentos() {
+            fetch('/api/schedules')
+                .then(function(resposta) { return resposta.json(); })
+                .then(function(dados) {
+                    // Simultaneidade
+                    if (dados.allowSimultaneous) {
+                        document.getElementById('sim_sim').checked = true;
+                    } else {
+                        document.getElementById('sim_nao').checked = true;
+                    }
+
+                    // Canal 1
+                    if (dados.channel1) {
+                        dados.channel1.forEach(function(sessao, idx) {
+                            if (idx < TOTAL_SLOTS) {
+                                document.getElementById('c1_ativo_' + idx).checked = sessao.enabled;
+                                document.getElementById('c1_inicio_' + idx).value = sessao.start || '00:00';
+                                document.getElementById('c1_duracao_' + idx).value = sessao.duration || 10;
+                            }
+                        });
+                    }
+
+                    // Canal 2
+                    if (dados.channel2) {
+                        dados.channel2.forEach(function(sessao, idx) {
+                            if (idx < TOTAL_SLOTS) {
+                                document.getElementById('c2_ativo_' + idx).checked = sessao.enabled;
+                                document.getElementById('c2_inicio_' + idx).value = sessao.start || '00:00';
+                                document.getElementById('c2_duracao_' + idx).value = sessao.duration || 10;
+                            }
+                        });
+                    }
+                })
+                .catch(function(erro) { console.error('Erro ao carregar agendamentos:', erro); });
+        }
+
+        /**
+         * Envia os agendamentos ao backend via POST /api/schedules (JSON).
+         * O backend valida conflitos e retorna HTTP 400 se houver
+         * sobreposição com simultaneidade desativada (ADR-006, CA-03).
+         */
+        function salvarAgendamentos() {
+            var botao = document.getElementById('btn_salvar_horarios');
+            botao.disabled = true;
+            botao.innerText = 'Salvando...';
+
+            var payload = {
+                allowSimultaneous: document.getElementById('sim_sim').checked,
+                channel1: [],
+                channel2: []
+            };
+
+            for (var i = 0; i < TOTAL_SLOTS; i++) {
+                payload.channel1.push({
+                    enabled: document.getElementById('c1_ativo_' + i).checked,
+                    start: document.getElementById('c1_inicio_' + i).value || '00:00',
+                    duration: parseInt(document.getElementById('c1_duracao_' + i).value) || 0
+                });
+
+                payload.channel2.push({
+                    enabled: document.getElementById('c2_ativo_' + i).checked,
+                    start: document.getElementById('c2_inicio_' + i).value || '00:00',
+                    duration: parseInt(document.getElementById('c2_duracao_' + i).value) || 0
+                });
+            }
+
+            fetch('/api/schedules', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(function(resposta) {
+                return resposta.json().then(function(dados) {
+                    return { ok: resposta.ok, dados: dados };
+                });
+            })
+            .then(function(resultado) {
+                var msgEl = document.getElementById('msg_feedback');
+                msgEl.style.display = 'block';
+
+                if (resultado.ok) {
+                    msgEl.className = 'msg-feedback msg-sucesso';
+                    msgEl.innerText = '✅ Programação salva com sucesso!';
+                } else {
+                    msgEl.className = 'msg-feedback msg-erro';
+                    msgEl.innerText = '❌ ' + (resultado.dados.error || 'Erro desconhecido.');
+                }
+
+                // Esconder mensagem após 5 segundos
+                setTimeout(function() { msgEl.style.display = 'none'; }, 5000);
+            })
+            .catch(function(erro) {
+                var msgEl = document.getElementById('msg_feedback');
+                msgEl.style.display = 'block';
+                msgEl.className = 'msg-feedback msg-erro';
+                msgEl.innerText = '❌ Erro de comunicação com o dispositivo.';
+                console.error('Erro ao salvar:', erro);
+            })
+            .finally(function() {
+                botao.disabled = false;
+                botao.innerText = 'Salvar Programação';
+            });
+        }
+
+        // Inicialização
+        gerarLinhasTabela();
+        window.onload = carregarAgendamentos;
+    </script>
+</body>
+</html>
