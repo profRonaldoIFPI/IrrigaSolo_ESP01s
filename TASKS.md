@@ -29,10 +29,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Commit da Etapa 3
 
 ## Etapa 4 — Gerenciamento de Rede Wi-Fi (AP/STA)
-- [ ] Criar `include/redeWifi.h`
-- [ ] Criar `src/redeWifi.cpp`
-- [ ] Atualizar READMEs de `/src` e `/include`
-- [ ] Commit da Etapa 4
+- [x] Criar `include/redeWifi.h`
+- [x] Criar `src/redeWifi.cpp`
+- [x] Atualizar READMEs de `/src` e `/include`
+- [x] Commit da Etapa 4
 
 ## Etapa 5 — Sincronização NTP
 - [ ] Criar `include/relogioNtp.h`
