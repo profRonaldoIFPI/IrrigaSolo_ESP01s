@@ -9,6 +9,7 @@ Este diretório contém os arquivos de implementação (`.cpp`) do firmware Irri
 | Arquivo | Responsabilidade |
 |---|---|
 | `main.cpp` | Ponto de entrada do firmware. Orquestra `setup()` e `loop()`. |
+| [persistencia.cpp](persistencia.cpp) | Leitura/escrita de JSON no LittleFS (ADR-004). |
 
 > **Nota:** Novos módulos (`.cpp`) serão adicionados conforme as etapas de implementação avançam.
 

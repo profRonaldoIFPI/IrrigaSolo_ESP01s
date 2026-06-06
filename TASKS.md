@@ -23,10 +23,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Commit da Etapa 2
 
 ## Etapa 3 — Persistência LittleFS (Leitura/Escrita JSON)
-- [ ] Criar `include/persistencia.h`
-- [ ] Criar `src/persistencia.cpp`
-- [ ] Atualizar READMEs de `/src` e `/include`
-- [ ] Commit da Etapa 3
+- [x] Criar `include/persistencia.h`
+- [x] Criar `src/persistencia.cpp`
+- [x] Atualizar READMEs de `/src` e `/include`
+- [x] Commit da Etapa 3
 
 ## Etapa 4 — Gerenciamento de Rede Wi-Fi (AP/STA)
 - [ ] Criar `include/redeWifi.h`
