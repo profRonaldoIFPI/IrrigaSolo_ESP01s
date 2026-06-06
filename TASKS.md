@@ -35,10 +35,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Commit da Etapa 4
 
 ## Etapa 5 — Sincronização NTP
-- [ ] Criar `include/relogioNtp.h`
-- [ ] Criar `src/relogioNtp.cpp`
-- [ ] Atualizar READMEs de `/src` e `/include`
-- [ ] Commit da Etapa 5
+- [x] Criar `include/relogioNtp.h`
+- [x] Criar `src/relogioNtp.cpp`
+- [x] Atualizar READMEs de `/src` e `/include`
+- [x] Commit da Etapa 5
 
 ## Etapa 6 — Motor de Agendamento (Scheduler)
 - [ ] Criar `include/agendador.h`

@@ -11,6 +11,7 @@ Este diretório contém os arquivos de implementação (`.cpp`) do firmware Irri
 | `main.cpp` | Ponto de entrada do firmware. Orquestra `setup()` e `loop()`. |
 | [persistencia.cpp](persistencia.cpp) | Leitura/escrita de JSON no LittleFS (ADR-004). |
 | [redeWifi.cpp](redeWifi.cpp) | Gerenciamento de Wi-Fi AP/STA com fallback (RF2). |
+| [relogioNtp.cpp](relogioNtp.cpp) | Sincronização NTP e formatação de data/hora (RF1.2). |
 
 > **Nota:** Novos módulos (`.cpp`) serão adicionados conforme as etapas de implementação avançam.
 
