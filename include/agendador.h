@@ -41,7 +41,8 @@ void inicializarReles();
  * @param configIrrigacao Configuração completa de irrigação (ambos canais).
  * @param minutoAtual     Minutos desde meia-noite (0–1439), obtido do NTP.
  */
-void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minutoAtual);
+void avaliarAgendamentos(const ConfiguracaoIrrigacao &configIrrigacao,
+                         int minutoAtual);
 
 /**
  * Valida se existe sobreposição de horários entre Canal 1 e Canal 2.
@@ -55,9 +56,10 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minut
  * equipamento esteja protegido mesmo se o frontend falhar (ADR-006).
  *
  * @param configIrrigacao Configuração candidata a ser validada.
- * @return true se não há conflitos (seguro para salvar), false se há sobreposição.
+ * @return true se não há conflitos (seguro para salvar), false se há
+ * sobreposição.
  */
-bool validarConflitos(const ConfiguracaoIrrigacao& configIrrigacao);
+bool validarConflitos(const ConfiguracaoIrrigacao &configIrrigacao);
 
 /**
  * Aciona ou desliga manualmente um canal de irrigação.
@@ -79,4 +81,4 @@ void controleManual(uint8_t canal, bool estado);
  * @param canal Número do canal (1 ou 2).
  * @return true se o relé está ligado (HIGH), false se desligado (LOW).
  */
-inline bool obterEstadoRele(uint8_t canal);
+bool obterEstadoRele(uint8_t canal);

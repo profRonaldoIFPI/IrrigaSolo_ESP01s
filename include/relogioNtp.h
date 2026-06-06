@@ -56,4 +56,4 @@ String obterDataFormatada();
  *
  * @return Valor inteiro de 0 a 1439 representando o minuto atual do dia.
  */
-inline int obterMinutosDesdeMeiaNoite();
+int obterMinutosDesdeMeiaNoite();

@@ -95,6 +95,6 @@ String obterDataFormatada() {
     return String(bufferData);
 }
 
-inline int obterMinutosDesdeMeiaNoite() {
+int obterMinutosDesdeMeiaNoite() {
     return clienteNtp.getHours() * 60 + clienteNtp.getMinutes();
 }

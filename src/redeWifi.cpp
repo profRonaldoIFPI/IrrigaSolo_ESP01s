@@ -145,7 +145,7 @@ void verificarConexaoWifi() {
     }
 }
 
-inline bool estaConectadoSta() {
+bool estaConectadoSta() {
     return !modoApAtivo && (WiFi.status() == WL_CONNECTED);
 }
 

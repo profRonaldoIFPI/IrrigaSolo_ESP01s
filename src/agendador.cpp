@@ -206,7 +206,7 @@ void controleManual(uint8_t canal, bool estado) {
     Serial.println(estado ? F(": LIGADO") : F(": DESLIGADO"));
 }
 
-inline bool obterEstadoRele(uint8_t canal) {
+bool obterEstadoRele(uint8_t canal) {
     uint8_t pino = obterPinoDoCanal(canal);
     if (pino == 0xFF) {
         return false;

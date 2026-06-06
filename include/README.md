@@ -18,7 +18,7 @@ Este diretório contém os arquivos de cabeçalho (`.h`) com declarações de fu
 | [index.html](index.html) | Dashboard principal (convertido para PROGMEM no build). |
 | [horarios.html](horarios.html) | Página de programação de horários (convertida para PROGMEM). |
 | [config.html](config.html) | Página de configuração de rede e NTP (convertida para PROGMEM). |
-| `README` | Guia original do PlatformIO (mantido para referência). |
+
 
 > **Nota:** Headers e HTMLs serão adicionados conforme as etapas de implementação avançam.
 

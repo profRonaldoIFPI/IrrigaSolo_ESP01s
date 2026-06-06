@@ -44,7 +44,7 @@ void verificarConexaoWifi();
  * Retorna true se o ESP8266 está conectado à rede local (modo STA).
  * Função inline para eliminar overhead de chamada no loop().
  */
-inline bool estaConectadoSta();
+bool estaConectadoSta();
 
 /**
  * Retorna o endereço IP atual do dispositivo.
