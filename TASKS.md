@@ -56,8 +56,8 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Commit da Etapa 7
 
 ## Etapa 8 — Integração Final no `main.cpp`
-- [ ] Implementar `setup()` com sequência ADR-007
-- [ ] Implementar `loop()` com super loop não-bloqueante
-- [ ] Atualizar `platformio.ini` (filesystem, monitor_speed)
-- [ ] Atualizar READMEs finais
-- [ ] Commit da Etapa 8
+- [x] Implementar `setup()` com sequência ADR-007
+- [x] Implementar `loop()` com super loop não-bloqueante
+- [x] Atualizar `platformio.ini` (filesystem, monitor_speed)
+- [x] Atualizar READMEs finais
+- [x] Commit da Etapa 8
