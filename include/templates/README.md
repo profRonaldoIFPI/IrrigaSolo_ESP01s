@@ -1,41 +1,34 @@
 # Objetivo
 
-Este diretório é responsável por armazenar os blocos de códigos reutilizáveis HTML/CSS (**partials**) que contêm a estilização CSS comum de Glassmorphism e elementos compartilhados (como o cabeçalho base e o rodapé). Esses blocos são mesclados de forma transparente nas páginas web estáticas do firmware IrrigaSolo em tempo de compilação, mantendo o desenvolvimento modular e livre de repetições redundantes (DRY).
+Este diretório centraliza toda a lógica de desenvolvimento Web da interface do firmware IrrigaSolo. Ele armazena as páginas HTML principais e a pasta de componentes reutilizáveis (**partials**), além de hospedar o script de build responsável por empacotar e converter esses recursos em arquivos de cabeçalho do C++.
 
 # Conteúdo
 
-| Arquivo | Descrição |
+| Arquivo/Pasta | Descrição |
 |---|---|
-| [head.html](head.html) | Contém os metadados comuns, folhas de estilo CSS para interface e Glassmorphism, fontes externas e definições globais do tema. |
-| [footer.html](footer.html) | Contém a marcação comum do rodapé do sistema. |
+| [index.html](index.html) | Dashboard principal com controle manual e telemetria em tempo real. |
+| [horarios.html](horarios.html) | Página de agendamento de horários e configuração de simultaneidade. |
+| [config.html](config.html) | Página de configurações de rede, NTP e formulário OTA. |
+| [partials/](partials/) | Componentes compartilhados reutilizáveis (`head.html`, `footer.html`). |
+| [html2c.py](html2c.py) | Script de build em Python que processa a injeção dos partials e gera as saídas `.h`. |
 
 # Dependências / Relações
 
-Os arquivos desta pasta não são incluídos diretamente no microcontrolador em tempo de execução. Em vez disso, o script de build [html2c.py](../../html2c.py) intercepta estes arquivos parciais e substitui os delimitadores comentados `<!-- template:head -->` e `<!-- template:footer -->` nas páginas HTML principais (`index.html`, `horarios.html`, `config.html`) antes de convertê-los em arquivos de cabeçalho C++ (`.h`) contendo matrizes `PROGMEM`.
+Em tempo de compilação, o PlatformIO invoca o script [html2c.py](html2c.py) (configurado via `extra_scripts` no `platformio.ini`). O script mescla os blocos compartilhados situados na pasta `partials/` nas páginas HTML principais e escreve os headers `.h` correspondentes diretamente na raiz da pasta `/include`.
 
-O fluxo de processamento visual é representado no diagrama abaixo:
+O fluxo físico atualizado é representado abaixo:
 
 ```mermaid
 flowchart TD
     subgraph include/templates/
-        Head["head.html (CSS/Fonts)"]
-        Footer["footer.html (Rodapé)"]
+        P["partials/ (head.html, footer.html)"] -->|Leitura| Python["html2c.py (Builder Script)"]
+        H["Páginas HTML (*.html)"] -->|Leitura e Injeção| Python
     end
 
-    subgraph include/ (Páginas Web)
-        Index["index.html"]
-        Horarios["horarios.html"]
-        Config["config.html"]
+    subgraph include/
+        Python -->|Geração de Headers| H_Files["Arquivos *.h (PROGMEM)"]
     end
 
-    Head -->|Leitura e Injeção| Python["html2c.py (Builder Script)"]
-    Footer -->|Leitura e Injeção| Python
-    Index -->|Mesclagem em Placeholders| Python
-    Horarios -->|Mesclagem em Placeholders| Python
-    Config -->|Mesclagem em Placeholders| Python
-
-    Python -->|Geração de Arrays PROGMEM| H_Files["Arquivos Header (*.h)"]
-    H_Files -->|Inclusão compilada| CPP["servidorWeb.cpp"]
+    H_Files -->|Inclusão compilada| CPP["src/servidorWeb.cpp"]
+    CPP -->|Upload OTA / USB| ESP["ESP8266 Flash"]
 ```
-
-O diagrama ilustra didaticamente como as partes visuais comuns e as páginas específicas são combinadas pelo script em Python para gerar arquivos C++ limpos prontos para a memória Flash do microcontrolador.
