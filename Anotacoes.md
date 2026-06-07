@@ -209,3 +209,26 @@ void inicializarServidor(ConfiguracaoRede* configRede, ConfiguracaoIrrigacao* co
    * *Resposta:* O módulo de persistência intercepta o erro de desserialização (JSON inválido), aplica defaults seguros (todas as sessões desabilitadas, relés inativos) e impede acionamentos incorretos no boot do sistema.
 3. **Qual é o papel da instrução `WiFi.persistent(false)`?**
    * *Resposta:* Ela instrui o SDK do ESP8266 a não gravar dados de conexão Wi-Fi na Flash interna a cada chamada de boot do rádio, evitando o desgaste prematuro da memória Flash e mantendo o LittleFS como única fonte de verdade.
+
+---
+
+## 5. Resolução de Problemas: Permissões de Porta Serial (Linux) 🔌
+
+Caso ocorra um erro de permissão ao tentar realizar o upload do firmware ou acessar o Serial Monitor do PlatformIO (ex: `Permission denied: '/dev/ttyUSB0'`), o problema está relacionado ao fato de o seu usuário do Linux não ter permissões para acessar dispositivos seriais.
+
+### Solução Definitiva
+
+As portas seriais como `/dev/ttyUSB0` pertencem ao grupo `dialout` (ou `uucp` em algumas distribuições). Para conceder acesso permanente ao seu usuário sem a necessidade de usar `sudo` para cada operação de gravação, siga o procedimento:
+
+1. **Adicionar o usuário ao grupo `dialout`**:
+   Execute o seguinte comando no terminal (substituindo `rpb` pelo seu usuário atual, ou usando a variável `$USER`):
+   ```bash
+   sudo usermod -a -G dialout rpb
+   ```
+
+2. **Aplicar as alterações**:
+   Para que as permissões do grupo sejam atualizadas, é necessário **fazer logout (encerrar a sessão)** do Linux e login novamente, ou simplesmente reiniciar o computador.
+
+3. **Verificação rápida**:
+   Você pode verificar se o seu usuário já faz parte do grupo executando o comando `groups` no terminal. Ele deve listar `dialout` entre as opções.
+

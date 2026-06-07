@@ -61,3 +61,8 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Atualizar `platformio.ini` (filesystem, monitor_speed)
 - [x] Atualizar READMEs finais
 - [x] Commit da Etapa 8
+
+## Etapa Extra — Configuração de Permissões de Gravação (Linux)
+- [x] Adicionar seção de solução de erro de porta serial no `Anotacoes.md`
+- [ ] Executar comando no terminal para adicionar usuário ao grupo `dialout`
+
