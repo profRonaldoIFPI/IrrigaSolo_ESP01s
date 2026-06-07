@@ -24,6 +24,7 @@
 #include "redeWifi.h"
 #include "relogioNtp.h"
 #include <ESP8266WebServer.h>
+#include <ESP8266HTTPUpdateServer.h>
 #include <ArduinoJson.h>
 
 // Headers gerados automaticamente pelo html2c.py (ADR-002)
@@ -36,6 +37,7 @@
 // ---------------------------------------------------------------------------
 
 static ESP8266WebServer servidor(80);
+static ESP8266HTTPUpdateServer atualizadorOta;
 static ConfiguracaoRede*      ptrConfigRede      = nullptr;
 static ConfiguracaoIrrigacao* ptrConfigIrrigacao = nullptr;
 
@@ -342,11 +344,14 @@ void inicializarServidor(ConfiguracaoRede* configRede, ConfiguracaoIrrigacao* co
     servidor.on("/api/network", HTTP_GET,  handleApiGetNetwork);
     servidor.on("/api/network", HTTP_POST, handleApiPostNetwork);
 
+    // Registra o servidor de atualização OTA na rota padrão (/update)
+    atualizadorOta.setup(&servidor);
+
     // Handler 404
     servidor.onNotFound(handleNaoEncontrado);
 
     servidor.begin();
-    Serial.println(F("[INFO] Servidor web iniciado na porta 80."));
+    Serial.println(F("[INFO] Servidor web iniciado na porta 80. Rota OTA /update pronta."));
 }
 
 void processarRequisicoes() {
