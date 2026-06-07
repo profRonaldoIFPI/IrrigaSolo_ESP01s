@@ -97,6 +97,21 @@
             </div>
         </div>
 
+        <!-- Atualização de Firmware (OTA) -->
+        <div class="card" id="card_config_ota">
+            <h2>Atualização de Firmware (OTA)</h2>
+            <form method="POST" action="/update" enctype="multipart/form-data" id="form_ota">
+                <div class="form-group">
+                    <label for="arquivo_ota">Selecione o arquivo firmware.bin</label>
+                    <input type="file" id="arquivo_ota" name="update" accept=".bin" required style="width:100%; padding:10px 0; color:var(--text-primary);">
+                </div>
+                <button type="submit" class="btn-submit" id="btn_update_ota" style="background-color: var(--danger); margin-top: 5px;">
+                    Realizar Atualização
+                </button>
+            </form>
+            <div class="form-hint" style="margin-top: 8px;">Atenção: O dispositivo irá reiniciar após o término do upload.</div>
+        </div>
+
         <!-- Mensagem de feedback -->
         <div class="msg-feedback" id="msg_feedback"></div>
 
@@ -189,7 +204,20 @@
                 });
         }
 
-        window.onload = carregarConfiguracaoRede;
+        window.onload = function() {
+            carregarConfiguracaoRede();
+            
+            // Adiciona feedback visual ao envio do firmware
+            var formOta = document.getElementById('form_ota');
+            if (formOta) {
+                formOta.onsubmit = function() {
+                    var btn = document.getElementById('btn_update_ota');
+                    btn.disabled = true;
+                    btn.innerText = 'Enviando firmware...';
+                    btn.style.backgroundColor = '#475569';
+                };
+            }
+        };
     </script>
 </body>
 

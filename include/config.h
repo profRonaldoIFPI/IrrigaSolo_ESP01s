@@ -122,6 +122,176 @@ const char config_html[] PROGMEM = R"rawliteral(
             box-shadow: none;
         }
 
+        /* Estilos dos botões de canais e status */
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .status-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .status-value {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-connected {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-disconnected {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .datetime-display {
+            text-align: center;
+        }
+
+        .time-large {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            color: var(--text-primary);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            line-height: 1.1;
+        }
+
+        .date-sub {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .channel-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .channel-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .channel-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .channel-status {
+            font-size: 0.85rem;
+            margin-top: 3px;
+        }
+
+        .status-on {
+            color: var(--primary);
+            font-weight: 600;
+            text-shadow: var(--glow-green);
+        }
+
+        .status-off {
+            color: var(--text-secondary);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-on {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-on:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--glow-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-off {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background-color: var(--danger);
+            color: #ffffff;
+        }
+
+        .btn-off:hover {
+            background-color: var(--danger-hover);
+            box-shadow: var(--glow-red);
+            transform: translateY(-1px);
+        }
+
+        .nav-links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .nav-btn {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .nav-btn:hover {
+            border-color: var(--primary);
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
         .msg-feedback {
             text-align: center;
             padding: 10px;
@@ -273,6 +443,21 @@ const char config_html[] PROGMEM = R"rawliteral(
             </div>
         </div>
 
+        <!-- Atualização de Firmware (OTA) -->
+        <div class="card" id="card_config_ota">
+            <h2>Atualização de Firmware (OTA)</h2>
+            <form method="POST" action="/update" enctype="multipart/form-data" id="form_ota">
+                <div class="form-group">
+                    <label for="arquivo_ota">Selecione o arquivo firmware.bin</label>
+                    <input type="file" id="arquivo_ota" name="update" accept=".bin" required style="width:100%; padding:10px 0; color:var(--text-primary);">
+                </div>
+                <button type="submit" class="btn-submit" id="btn_update_ota" style="background-color: var(--danger); margin-top: 5px;">
+                    Realizar Atualização
+                </button>
+            </form>
+            <div class="form-hint" style="margin-top: 8px;">Atenção: O dispositivo irá reiniciar após o término do upload.</div>
+        </div>
+
         <!-- Mensagem de feedback -->
         <div class="msg-feedback" id="msg_feedback"></div>
 
@@ -366,7 +551,20 @@ const char config_html[] PROGMEM = R"rawliteral(
                 });
         }
 
-        window.onload = carregarConfiguracaoRede;
+        window.onload = function() {
+            carregarConfiguracaoRede();
+            
+            // Adiciona feedback visual ao envio do firmware
+            var formOta = document.getElementById('form_ota');
+            if (formOta) {
+                formOta.onsubmit = function() {
+                    var btn = document.getElementById('btn_update_ota');
+                    btn.disabled = true;
+                    btn.innerText = 'Enviando firmware...';
+                    btn.style.backgroundColor = '#475569';
+                };
+            }
+        };
     </script>
 </body>
 
