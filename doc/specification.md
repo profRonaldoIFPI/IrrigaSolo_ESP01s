@@ -9,6 +9,8 @@ Projeto de sistema de irrigação automatizado baseado em agendamento de horári
 * 2 Válvulas solenoides simples (tipo máquina de lavar roupas - 220V).
 * Fonte de alimentação 5V (adequada para o NodeMCU e picos de corrente das bobinas dos relés).
 
+![Esquemático](Montagem_Esquemático.png "Esquemático")
+
 ## 2. Requisitos Funcionais
 
 ### RF1 - Agendamento e Acionamento
