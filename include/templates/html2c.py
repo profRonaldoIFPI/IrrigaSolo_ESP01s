@@ -7,16 +7,20 @@ except ImportError:
 import os
 import glob
 
-# Certificar que a pasta 'include' existe
-if not os.path.exists("include"):
-    os.makedirs("include")
+# SCons (PlatformIO) não define __file__ na execução do script.
+# Como o SConscript é invocado no diretório raiz do projeto PlatformIO,
+# podemos basear os caminhos a partir do diretório de trabalho atual (cwd).
+BASE_DIR = os.getcwd()
+TEMPLATES_DIR = os.path.join(BASE_DIR, "include", "templates")
+PARTIALS_DIR = os.path.join(TEMPLATES_DIR, "partials")
+INCLUDE_DIR = os.path.join(BASE_DIR, "include")
 
 # Carrega os templates parciais se existirem
 head_partial = ""
 footer_partial = ""
 
-head_path = os.path.join("include", "templates", "head.html")
-footer_path = os.path.join("include", "templates", "footer.html")
+head_path = os.path.join(PARTIALS_DIR, "head.html")
+footer_path = os.path.join(PARTIALS_DIR, "footer.html")
 
 if os.path.exists(head_path):
     with open(head_path, "r", encoding="utf-8") as f:
@@ -26,13 +30,13 @@ if os.path.exists(footer_path):
     with open(footer_path, "r", encoding="utf-8") as f:
         footer_partial = f.read()
 
-# Varrer todos os arquivos .html no diretório include/
-html_files = glob.glob(os.path.join("include", "*.html"))
+# Varrer todos os arquivos .html no diretório de templates
+html_files = glob.glob(os.path.join(TEMPLATES_DIR, "*.html"))
 
 for source_file in html_files:
-    # Obter o nome base do arquivo (ex: 'config' de 'include/config.html')
+    # Obter o nome base do arquivo (ex: 'config' de 'include/templates/config.html')
     base_name = os.path.splitext(os.path.basename(source_file))[0]
-    header_file = os.path.join("include", f"{base_name}.h")
+    header_file = os.path.join(INCLUDE_DIR, f"{base_name}.h")
 
     # Lê o conteúdo do arquivo HTML
     with open(source_file, "r", encoding="utf-8") as f:
@@ -51,7 +55,7 @@ for source_file in html_files:
     header_content += html_content
     header_content += '\n)rawliteral";\n'
 
-    # Escreve o arquivo .h
+    # Escreve o arquivo .h na pasta include/
     with open(header_file, "w", encoding="utf-8") as f:
         f.write(header_content)
 
