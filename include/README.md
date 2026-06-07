@@ -18,17 +18,20 @@ Este diretório contém os arquivos de cabeçalho (`.h`) com declarações de fu
 | [index.html](index.html) | Dashboard principal (convertido para PROGMEM no build). |
 | [horarios.html](horarios.html) | Página de programação de horários (convertida para PROGMEM). |
 | [config.html](config.html) | Página de configuração de rede e NTP (convertida para PROGMEM). |
+| [templates/](templates/) | Parciais HTML compartilhados (`head.html`, `footer.html`). |
 
 
-> **Nota:** Headers e HTMLs serão adicionados conforme as etapas de implementação avançam.
+> **Nota:** Headers e HTMLs são atualizados e convertidos automaticamente.
 
 ## Dependências / Relações
 
-Os headers deste diretório são consumidos pelos arquivos `.cpp` em `/src`. O fluxo de conversão das páginas web segue o pipeline:
+Os headers deste diretório são consumidos pelos arquivos `.cpp` em `/src`. O fluxo de conversão das páginas web com suporte a blocos parciais compartilhados (partials) segue o pipeline:
 
 ```mermaid
-flowchart LR
-    HTML["*.html (include/)"] -->|html2c.py| H["*.h (PROGMEM)"]
+flowchart TD
+    Partials["Partials (templates/head.html, footer.html)"] -->|html2c.py| Merge["Mesclagem em placeholders"]
+    HTML["Páginas HTML (index.html, etc)"] -->|html2c.py| Merge
+    Merge --> H["Geração de *.h (PROGMEM)"]
     H --> SRC["servidorWeb.cpp (src/)"]
     SRC --> ESP["ESP8266 Flash"]
 ```

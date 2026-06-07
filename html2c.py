@@ -1,7 +1,7 @@
 # html2c.py
 try:
-    Import("env")
-except NameError:
+    import env
+except ImportError:
     pass
 
 import os
@@ -10,6 +10,21 @@ import glob
 # Certificar que a pasta 'include' existe
 if not os.path.exists("include"):
     os.makedirs("include")
+
+# Carrega os templates parciais se existirem
+head_partial = ""
+footer_partial = ""
+
+head_path = os.path.join("include", "templates", "head.html")
+footer_path = os.path.join("include", "templates", "footer.html")
+
+if os.path.exists(head_path):
+    with open(head_path, "r", encoding="utf-8") as f:
+        head_partial = f.read()
+
+if os.path.exists(footer_path):
+    with open(footer_path, "r", encoding="utf-8") as f:
+        footer_partial = f.read()
 
 # Varrer todos os arquivos .html no diretório include/
 html_files = glob.glob(os.path.join("include", "*.html"))
@@ -23,6 +38,12 @@ for source_file in html_files:
     with open(source_file, "r", encoding="utf-8") as f:
         html_content = f.read()
 
+    # Aplica o pré-processamento dos partials/templates
+    if head_partial:
+        html_content = html_content.replace("<!-- template:head -->", head_partial)
+    if footer_partial:
+        html_content = html_content.replace("<!-- template:footer -->", footer_partial)
+
     # Formata o conteúdo para um C++ raw string literal
     # O nome da variável será no formato: <nome_do_arquivo>_html
     header_content = '#pragma once\n\n'
@@ -34,4 +55,4 @@ for source_file in html_files:
     with open(header_file, "w", encoding="utf-8") as f:
         f.write(header_content)
 
-    print(f"[HTML_2_C] '{source_file}' foi convertido com sucesso para '{header_file}'")
+    print(f"[HTML_2_C] '{source_file}' (com partials) foi convertido para '{header_file}'")

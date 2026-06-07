@@ -3,11 +3,11 @@
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
+        <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IrrigaSolo - Dashboard</title>
-    <meta name="description" content="Painel de controle do sistema de irrigação automatizado IrrigaSolo.">
+    <meta name="description" content="Painel de controle de irrigação IrrigaSolo.">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -47,7 +47,10 @@ const char index_html[] PROGMEM = R"rawliteral(
             margin-top: 20px;
         }
 
-        header { text-align: center; margin-bottom: 30px; }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
         h1 {
             font-size: 2.2rem;
@@ -76,142 +79,96 @@ const char index_html[] PROGMEM = R"rawliteral(
             transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        .card:hover { border-color: rgba(16, 185, 129, 0.3); }
-
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        .card:hover {
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
-        .status-row:last-child { border-bottom: none; padding-bottom: 0; }
-
-        .status-label { color: var(--text-secondary); font-weight: 500; }
-
-        .status-value { font-weight: 600; font-size: 1.1rem; }
-
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .badge-connected {
-            background-color: rgba(16, 185, 129, 0.2);
-            color: var(--primary);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .badge-disconnected {
-            background-color: rgba(239, 68, 68, 0.2);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .datetime-display { text-align: center; }
-
-        .time-large {
-            font-size: 3rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-            color: var(--text-primary);
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-            line-height: 1.1;
-        }
-
-        .date-sub {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-            margin-top: 5px;
-        }
-
-        .channel-control {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        h2 {
+            font-size: 1.25rem;
             margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+            color: var(--text-primary);
         }
 
-        .channel-info { display: flex; flex-direction: column; }
-
-        .channel-name { font-size: 1.1rem; font-weight: 600; }
-
-        .channel-status { font-size: 0.85rem; margin-top: 3px; }
-
-        .status-on {
-            color: var(--primary);
-            font-weight: 600;
-            text-shadow: var(--glow-green);
-        }
-
-        .status-off { color: var(--text-secondary); }
-
-        .btn-group { display: flex; gap: 8px; }
-
-        button {
-            padding: 8px 16px;
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
             border-radius: 8px;
+            font-size: 1rem;
             font-weight: 600;
-            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.2s ease;
-            border: none;
+            margin-top: 10px;
         }
 
-        .btn-on { background-color: var(--primary); color: #ffffff; }
-
-        .btn-on:hover {
+        .btn-submit:hover {
             background-color: var(--primary-hover);
             box-shadow: var(--glow-green);
             transform: translateY(-1px);
         }
 
-        .btn-off { background-color: var(--danger); color: #ffffff; }
-
-        .btn-off:hover {
-            background-color: var(--danger-hover);
-            box-shadow: var(--glow-red);
-            transform: translateY(-1px);
+        .btn-submit:active {
+            transform: translateY(1px);
         }
 
-        button:active { transform: translateY(1px); }
+        .btn-submit:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
-        .nav-links {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+        .msg-feedback {
+            text-align: center;
+            padding: 10px;
             margin-top: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none;
         }
 
-        .nav-btn {
+        .msg-sucesso {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .msg-erro {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .msg-aviso {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .nav-back {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 14px;
-            background: var(--card-bg);
+            padding: 12px;
+            background: transparent;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-primary);
+            border-radius: 8px;
+            color: var(--text-secondary);
             text-decoration: none;
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 0.95rem;
             transition: all 0.2s ease;
-            box-shadow: var(--shadow);
+            text-align: center;
         }
 
-        .nav-btn:hover {
-            border-color: var(--primary);
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--primary);
-            transform: translateY(-2px);
+        .nav-back:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         footer {
@@ -221,7 +178,10 @@ const char index_html[] PROGMEM = R"rawliteral(
             font-size: 0.8rem;
         }
     </style>
+
+    <title>IrrigaSolo - Dashboard</title>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -257,7 +217,8 @@ const char index_html[] PROGMEM = R"rawliteral(
             <div class="channel-control" id="controle_c1">
                 <div class="channel-info">
                     <span class="channel-name">Canal 1</span>
-                    <span class="channel-status" id="lbl_status_c1">Status: <span class="status-off" id="val_status_c1">Desligado</span></span>
+                    <span class="channel-status" id="lbl_status_c1">Status: <span class="status-off"
+                            id="val_status_c1">Desligado</span></span>
                 </div>
                 <div class="btn-group">
                     <button class="btn-on" id="btn_c1_ligar" onclick="controlarCanal(1, 1)">Ligar</button>
@@ -269,7 +230,8 @@ const char index_html[] PROGMEM = R"rawliteral(
             <div class="channel-control" id="controle_c2">
                 <div class="channel-info">
                     <span class="channel-name">Canal 2</span>
-                    <span class="channel-status" id="lbl_status_c2">Status: <span class="status-off" id="val_status_c2">Desligado</span></span>
+                    <span class="channel-status" id="lbl_status_c2">Status: <span class="status-off"
+                            id="val_status_c2">Desligado</span></span>
                 </div>
                 <div class="btn-group">
                     <button class="btn-on" id="btn_c2_ligar" onclick="controlarCanal(2, 1)">Ligar</button>
@@ -284,7 +246,8 @@ const char index_html[] PROGMEM = R"rawliteral(
             <a href="/config" class="nav-btn" id="link_config">⚙️ Conexão & NTP</a>
         </div>
 
-        <footer>IrrigaSolo v1.0 • Baseado em ESP8266</footer>
+                <footer>IrrigaSolo v1.0 • @copyright Ronaldo Borges - 2026</footer>
+
     </div>
 
     <script>
@@ -294,8 +257,8 @@ const char index_html[] PROGMEM = R"rawliteral(
          */
         function atualizarStatus() {
             fetch('/api/status')
-                .then(function(resposta) { return resposta.json(); })
-                .then(function(dados) {
+                .then(function (resposta) { return resposta.json(); })
+                .then(function (dados) {
                     document.getElementById('lbl_hora').innerText = dados.time || '00:00:00';
                     document.getElementById('lbl_data').innerText = dados.date || '-- de -- de ----';
 
@@ -330,7 +293,7 @@ const char index_html[] PROGMEM = R"rawliteral(
                         statusC2.className = 'status-off';
                     }
                 })
-                .catch(function(erro) { console.error('Erro ao obter status:', erro); });
+                .catch(function (erro) { console.error('Erro ao obter status:', erro); });
         }
 
         /**
@@ -339,14 +302,14 @@ const char index_html[] PROGMEM = R"rawliteral(
          */
         function controlarCanal(canal, estado) {
             fetch('/api/control?channel=' + canal + '&state=' + estado, { method: 'POST' })
-                .then(function(resposta) {
+                .then(function (resposta) {
                     if (resposta.ok) {
                         atualizarStatus();
                     } else {
                         alert('Erro ao enviar comando.');
                     }
                 })
-                .catch(function(erro) { console.error('Erro no controle manual:', erro); });
+                .catch(function (erro) { console.error('Erro no controle manual:', erro); });
         }
 
         // Polling a cada 2 segundos para atualização em tempo real
@@ -355,6 +318,6 @@ const char index_html[] PROGMEM = R"rawliteral(
         window.onload = atualizarStatus;
     </script>
 </body>
-</html>
 
+</html>
 )rawliteral";

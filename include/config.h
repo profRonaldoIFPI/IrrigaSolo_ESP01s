@@ -3,11 +3,11 @@
 const char config_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
+        <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IrrigaSolo - Configurações</title>
-    <meta name="description" content="Configuração de rede Wi-Fi e NTP do sistema IrrigaSolo.">
+    <meta name="description" content="Painel de controle de irrigação IrrigaSolo.">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -18,11 +18,17 @@ const char config_html[] PROGMEM = R"rawliteral(
             --primary: #10b981;
             --primary-hover: #059669;
             --danger: #ef4444;
+            --danger-hover: #dc2626;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
             --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
+            --glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -35,19 +41,31 @@ const char config_html[] PROGMEM = R"rawliteral(
             padding: 20px;
         }
 
-        .container { width: 100%; max-width: 600px; margin-top: 20px; }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
 
-        header { text-align: center; margin-bottom: 30px; }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
         h1 {
-            font-size: 2.2rem; font-weight: 700;
+            font-size: 2.2rem;
+            font-weight: 700;
             background: linear-gradient(to right, #10b981, #34d399);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 5px;
         }
 
-        .subtitle { color: var(--text-secondary); font-size: 0.95rem; }
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
 
         .card {
             background: var(--card-bg);
@@ -55,18 +73,114 @@ const char config_html[] PROGMEM = R"rawliteral(
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
             margin-bottom: 20px;
             box-shadow: var(--shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
         h2 {
-            font-size: 1.25rem; margin-bottom: 15px;
+            font-size: 1.25rem;
+            margin-bottom: 15px;
             border-left: 4px solid var(--primary);
             padding-left: 10px;
             color: var(--text-primary);
         }
 
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--primary-hover);
+            box-shadow: var(--glow-green);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .btn-submit:disabled {
+            background-color: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .msg-feedback {
+            text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none;
+        }
+
+        .msg-sucesso {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .msg-erro {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .msg-aviso {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .nav-back {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .nav-back:hover {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+    </style>
+
+    <title>IrrigaSolo - Configurações</title>
+    <style>
         .form-group {
             margin-bottom: 16px;
         }
@@ -102,69 +216,9 @@ const char config_html[] PROGMEM = R"rawliteral(
             font-size: 0.8rem;
             margin-top: 4px;
         }
-
-        .btn-submit {
-            width: 100%; padding: 14px;
-            background-color: var(--primary); color: #ffffff;
-            border: none; border-radius: 8px;
-            font-size: 1rem; font-weight: 600;
-            cursor: pointer; transition: all 0.2s ease; margin-top: 10px;
-        }
-
-        .btn-submit:hover {
-            background-color: var(--primary-hover);
-            box-shadow: var(--glow-green);
-            transform: translateY(-1px);
-        }
-
-        .btn-submit:active { transform: translateY(1px); }
-
-        .btn-submit:disabled {
-            background-color: #475569; cursor: not-allowed;
-            transform: none; box-shadow: none;
-        }
-
-        .msg-feedback {
-            text-align: center; padding: 10px; margin-top: 10px;
-            border-radius: 8px; font-weight: 600; display: none;
-        }
-
-        .msg-sucesso {
-            background-color: rgba(16, 185, 129, 0.15);
-            color: var(--primary);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .msg-erro {
-            background-color: rgba(239, 68, 68, 0.15);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .msg-aviso {
-            background-color: rgba(245, 158, 11, 0.15);
-            color: #f59e0b;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-
-        .nav-back {
-            display: flex; justify-content: center; align-items: center;
-            padding: 12px; background: transparent;
-            border: 1px solid var(--border-color); border-radius: 8px;
-            color: var(--text-secondary); text-decoration: none;
-            font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .nav-back:hover {
-            border-color: rgba(255, 255, 255, 0.3);
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        footer { margin-top: 40px; text-align: center; color: var(--text-secondary); font-size: 0.8rem; }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -222,13 +276,15 @@ const char config_html[] PROGMEM = R"rawliteral(
         <!-- Mensagem de feedback -->
         <div class="msg-feedback" id="msg_feedback"></div>
 
-        <button class="btn-submit" id="btn_salvar_config" onclick="salvarConfiguracaoRede()" style="margin-bottom: 20px;">
+        <button class="btn-submit" id="btn_salvar_config" onclick="salvarConfiguracaoRede()"
+            style="margin-bottom: 20px;">
             Salvar Configurações
         </button>
 
         <a href="/" class="nav-back" id="link_voltar_painel">⬅ Voltar ao Painel</a>
 
-        <footer>IrrigaSolo v1.0 • Baseado em ESP8266</footer>
+                <footer>IrrigaSolo v1.0 • @copyright Ronaldo Borges - 2026</footer>
+
     </div>
 
     <script>
@@ -238,15 +294,15 @@ const char config_html[] PROGMEM = R"rawliteral(
          */
         function carregarConfiguracaoRede() {
             fetch('/api/network')
-                .then(function(resposta) { return resposta.json(); })
-                .then(function(dados) {
+                .then(function (resposta) { return resposta.json(); })
+                .then(function (dados) {
                     document.getElementById('campo_ssid_ap').value = dados.ssidAp || '';
                     document.getElementById('campo_ssid_sta').value = dados.ssidSta || '';
                     document.getElementById('campo_servidor_ntp').value = dados.ntpServer || 'pool.ntp.br';
                     document.getElementById('campo_fuso_horario').value = dados.timeZone !== undefined ? dados.timeZone : -3;
                     document.getElementById('campo_intervalo_ntp').value = dados.ntpSyncInterval || 21600;
                 })
-                .catch(function(erro) { console.error('Erro ao carregar config de rede:', erro); });
+                .catch(function (erro) { console.error('Erro ao carregar config de rede:', erro); });
         }
 
         /**
@@ -278,41 +334,41 @@ const char config_html[] PROGMEM = R"rawliteral(
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-            .then(function(resposta) {
-                return resposta.json().then(function(dados) {
-                    return { ok: resposta.ok, dados: dados };
-                });
-            })
-            .then(function(resultado) {
-                var msgEl = document.getElementById('msg_feedback');
-                msgEl.style.display = 'block';
+                .then(function (resposta) {
+                    return resposta.json().then(function (dados) {
+                        return { ok: resposta.ok, dados: dados };
+                    });
+                })
+                .then(function (resultado) {
+                    var msgEl = document.getElementById('msg_feedback');
+                    msgEl.style.display = 'block';
 
-                if (resultado.ok) {
-                    msgEl.className = 'msg-feedback msg-aviso';
-                    msgEl.innerText = '⚠️ Configuração salva. O dispositivo está reconectando à rede...';
-                } else {
+                    if (resultado.ok) {
+                        msgEl.className = 'msg-feedback msg-aviso';
+                        msgEl.innerText = '⚠️ Configuração salva. O dispositivo está reconectando à rede...';
+                    } else {
+                        msgEl.className = 'msg-feedback msg-erro';
+                        msgEl.innerText = '❌ ' + (resultado.dados.error || 'Erro desconhecido.');
+                    }
+
+                    setTimeout(function () { msgEl.style.display = 'none'; }, 8000);
+                })
+                .catch(function (erro) {
+                    var msgEl = document.getElementById('msg_feedback');
+                    msgEl.style.display = 'block';
                     msgEl.className = 'msg-feedback msg-erro';
-                    msgEl.innerText = '❌ ' + (resultado.dados.error || 'Erro desconhecido.');
-                }
-
-                setTimeout(function() { msgEl.style.display = 'none'; }, 8000);
-            })
-            .catch(function(erro) {
-                var msgEl = document.getElementById('msg_feedback');
-                msgEl.style.display = 'block';
-                msgEl.className = 'msg-feedback msg-erro';
-                msgEl.innerText = '❌ Erro de comunicação com o dispositivo.';
-                console.error('Erro ao salvar config:', erro);
-            })
-            .finally(function() {
-                botao.disabled = false;
-                botao.innerText = 'Salvar Configurações';
-            });
+                    msgEl.innerText = '❌ Erro de comunicação com o dispositivo.';
+                    console.error('Erro ao salvar config:', erro);
+                })
+                .finally(function () {
+                    botao.disabled = false;
+                    botao.innerText = 'Salvar Configurações';
+                });
         }
 
         window.onload = carregarConfiguracaoRede;
     </script>
 </body>
-</html>
 
+</html>
 )rawliteral";

@@ -10,7 +10,7 @@ O **IrrigaSolo** é um firmware para microcontroladores baseado no chip **ESP826
 * **Autonomia Temporal:** Sincronização do relógio via NTP com fallback para oscilador interno caso a internet caia.
 * **Segurança e Confiabilidade:** Pinos de hardware são forçados a estados seguros no instante do boot e no caso de arquivos de configuração corrompidos.
 * **Persistência Local Dedicada:** Armazenamento em arquivos JSON no LittleFS separados por domínio de interesse (Rede vs. Irrigação) para prevenir desgaste prematuro e corrupção cruzada.
-* **Interface Web Embutida Leve:** A interface de controle é guardada na memória flash do controlador (`PROGMEM`) em formato compactado e as alterações de estado são feitas de modo assíncrono via chamadas de API JSON (Fetch API), evitando o recarregamento total de páginas.
+* **Interface Web Embutida Leve com Partials:** A interface de controle é guardada na memória flash do controlador (`PROGMEM`) em formato compactado. Para manter o código limpo e evitar redundância (DRY - *Don't Repeat Yourself*), o firmware utiliza um sistema de **partials** (templates parciais para `<head>` e `<footer>`) que são dinamicamente mesclados pelo script `html2c.py` em tempo de compilação. As alterações de estado em tempo de execução são feitas de modo assíncrono via chamadas de API JSON (Fetch API), evitando o recarregamento total de páginas.
 * **Arquitetura Baseada em Super Loop Não-Bloqueante:** Proibição do uso de `delay()` para garantir que o Watchdog Timer (WDT) não reinicie a placa e as pilhas de comunicação Wi-Fi operem com fluidez.
 
 ---
@@ -201,6 +201,23 @@ void inicializarServidor(ConfiguracaoRede* configRede, ConfiguracaoIrrigacao* co
 
 ---
 
+### 3.6. Módulo do Pipeline de Templates Parciais (`html2c.py` / `include/templates/`)
+* **Conceito Abstrato:** Para evitar a duplicação em massa de folhas de estilo CSS, fontes externas e rodapés em todas as páginas HTML, o projeto separa esses elementos em arquivos parciais (`head.html` e `footer.html`).
+* **Compilação do HTML (Pré-processamento):** Em tempo de compilação, o script em Python `html2c.py` mescla de forma transparente esses blocos de código em todas as páginas que possuem os delimitadores comentados `<!-- template:head -->` e `<!-- template:footer -->` antes de serializar o resultado final como cabeçalhos C++ com arrays de dados `PROGMEM`.
+
+**Demonstração em Código (Python):**
+O trecho abaixo do script `html2c.py` mostra como a mesclagem é realizada no computador antes da geração do código do ESP8266:
+
+```python
+# Aplica o pré-processamento dos partials/templates
+if head_partial:
+    html_content = html_content.replace("<!-- template:head -->", head_partial)
+if footer_partial:
+    html_content = html_content.replace("<!-- template:footer -->", footer_partial)
+```
+
+---
+
 ## 4. Questões Rápidas de Revisão (Para a Prova 📝)
 
 1. **Por que não devemos utilizar `delay()` no `loop()` principal de um firmware IoT?**
@@ -209,6 +226,8 @@ void inicializarServidor(ConfiguracaoRede* configRede, ConfiguracaoIrrigacao* co
    * *Resposta:* O módulo de persistência intercepta o erro de desserialização (JSON inválido), aplica defaults seguros (todas as sessões desabilitadas, relés inativos) e impede acionamentos incorretos no boot do sistema.
 3. **Qual é o papel da instrução `WiFi.persistent(false)`?**
    * *Resposta:* Ela instrui o SDK do ESP8266 a não gravar dados de conexão Wi-Fi na Flash interna a cada chamada de boot do rádio, evitando o desgaste prematuro da memória Flash e mantendo o LittleFS como única fonte de verdade.
+4. **Qual é a vantagem de utilizar o sistema de partials (templates parciais) na interface web do IrrigaSolo?**
+   * *Resposta:* A vantagem é a modularidade e facilidade de manutenção (DRY - *Don't Repeat Yourself*). O desenvolvedor altera a folha de estilo ou a estrutura base da tag `<head>` em um único arquivo parcial (`head.html`) e o script de build propaga a mudança automaticamente para todas as páginas em tempo de compilação, sem gerar qualquer overhead de processamento ou consumo extra de RAM no hardware do ESP8266.
 
 ---
 

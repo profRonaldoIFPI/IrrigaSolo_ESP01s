@@ -3,11 +3,11 @@
 const char horarios_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
+        <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IrrigaSolo - Programação</title>
-    <meta name="description" content="Configuração de horários de irrigação do sistema IrrigaSolo.">
+    <meta name="description" content="Painel de controle de irrigação IrrigaSolo.">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -18,11 +18,17 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             --primary: #10b981;
             --primary-hover: #059669;
             --danger: #ef4444;
+            --danger-hover: #dc2626;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
             --glow-green: 0 0 15px rgba(16, 185, 129, 0.4);
+            --glow-red: 0 0 15px rgba(239, 68, 68, 0.4);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -35,19 +41,31 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             padding: 20px;
         }
 
-        .container { width: 100%; max-width: 650px; margin-top: 20px; }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
 
-        header { text-align: center; margin-bottom: 30px; }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
         h1 {
-            font-size: 2.2rem; font-weight: 700;
+            font-size: 2.2rem;
+            font-weight: 700;
             background: linear-gradient(to right, #10b981, #34d399);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 5px;
         }
 
-        .subtitle { color: var(--text-secondary); font-size: 0.95rem; }
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+        }
 
         .card {
             background: var(--card-bg);
@@ -55,78 +73,36 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
             margin-bottom: 20px;
             box-shadow: var(--shadow);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(16, 185, 129, 0.3);
         }
 
         h2 {
-            font-size: 1.25rem; margin-bottom: 15px;
+            font-size: 1.25rem;
+            margin-bottom: 15px;
             border-left: 4px solid var(--primary);
             padding-left: 10px;
             color: var(--text-primary);
         }
 
-        .table-responsive { width: 100%; overflow-x: auto; margin-bottom: 20px; }
-
-        table { width: 100%; border-collapse: collapse; text-align: left; }
-
-        th {
-            padding: 10px; font-weight: 600;
-            color: var(--text-secondary);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
-        }
-
-        td {
-            padding: 8px 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            vertical-align: middle;
-        }
-
-        input[type="time"] {
-            padding: 6px 10px; border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: rgba(15, 23, 42, 0.6);
-            color: var(--text-primary); font-size: 0.95rem;
-            outline: none; width: 100%; max-width: 130px;
-        }
-
-        input[type="number"] {
-            padding: 6px 10px; border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: rgba(15, 23, 42, 0.6);
-            color: var(--text-primary); font-size: 0.95rem;
-            outline: none; width: 100%; max-width: 80px;
-        }
-
-        input[type="checkbox"] {
-            width: 18px; height: 18px;
-            accent-color: var(--primary); cursor: pointer;
-        }
-
-        .option-group {
-            display: flex; align-items: center; gap: 20px;
-            margin-top: 10px; padding: 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .option-label { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
-
-        .radio-item { display: flex; align-items: center; gap: 6px; cursor: pointer; }
-
-        .radio-item input[type="radio"] {
-            accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer;
-        }
-
         .btn-submit {
-            width: 100%; padding: 14px;
-            background-color: var(--primary); color: #ffffff;
-            border: none; border-radius: 8px;
-            font-size: 1rem; font-weight: 600;
-            cursor: pointer; transition: all 0.2s ease; margin-top: 10px;
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 10px;
         }
 
         .btn-submit:hover {
@@ -135,16 +111,24 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             transform: translateY(-1px);
         }
 
-        .btn-submit:active { transform: translateY(1px); }
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
 
         .btn-submit:disabled {
-            background-color: #475569; cursor: not-allowed;
-            transform: none; box-shadow: none;
+            background-color: #475569;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .msg-feedback {
-            text-align: center; padding: 10px; margin-top: 10px;
-            border-radius: 8px; font-weight: 600; display: none;
+            text-align: center;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: none;
         }
 
         .msg-sucesso {
@@ -159,12 +143,25 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
+        .msg-aviso {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
         .nav-back {
-            display: flex; justify-content: center; align-items: center;
-            padding: 12px; background: transparent;
-            border: 1px solid var(--border-color); border-radius: 8px;
-            color: var(--text-secondary); text-decoration: none;
-            font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
             text-align: center;
         }
 
@@ -174,9 +171,106 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             background: rgba(255, 255, 255, 0.05);
         }
 
-        footer { margin-top: 40px; text-align: center; color: var(--text-secondary); font-size: 0.8rem; }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+    </style>
+
+    <title>IrrigaSolo - Programação</title>
+    <style>
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            padding: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        input[type="time"] {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
+            max-width: 130px;
+        }
+
+        input[type="number"] {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            width: 100%;
+            max-width: 80px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-top: 10px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .option-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .radio-item input[type="radio"] {
+            accent-color: var(--primary);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
@@ -238,9 +332,10 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             Salvar Programação
         </button>
 
-        <a href="/" class="nav-back" id="link_voltar_painel">⬅ Voltar ao Painel</a>
+        <a href="/" class="nav-back" id="link_voltar_painel">⬅ Voltar ao Panel</a>
 
-        <footer>IrrigaSolo v1.0 • Baseado em ESP8266</footer>
+                <footer>IrrigaSolo v1.0 • @copyright Ronaldo Borges - 2026</footer>
+
     </div>
 
     <script>
@@ -273,8 +368,8 @@ const char horarios_html[] PROGMEM = R"rawliteral(
          */
         function carregarAgendamentos() {
             fetch('/api/schedules')
-                .then(function(resposta) { return resposta.json(); })
-                .then(function(dados) {
+                .then(function (resposta) { return resposta.json(); })
+                .then(function (dados) {
                     // Simultaneidade
                     if (dados.allowSimultaneous) {
                         document.getElementById('sim_sim').checked = true;
@@ -284,7 +379,7 @@ const char horarios_html[] PROGMEM = R"rawliteral(
 
                     // Canal 1
                     if (dados.channel1) {
-                        dados.channel1.forEach(function(sessao, idx) {
+                        dados.channel1.forEach(function (sessao, idx) {
                             if (idx < TOTAL_SLOTS) {
                                 document.getElementById('c1_ativo_' + idx).checked = sessao.enabled;
                                 document.getElementById('c1_inicio_' + idx).value = sessao.start || '00:00';
@@ -295,7 +390,7 @@ const char horarios_html[] PROGMEM = R"rawliteral(
 
                     // Canal 2
                     if (dados.channel2) {
-                        dados.channel2.forEach(function(sessao, idx) {
+                        dados.channel2.forEach(function (sessao, idx) {
                             if (idx < TOTAL_SLOTS) {
                                 document.getElementById('c2_ativo_' + idx).checked = sessao.enabled;
                                 document.getElementById('c2_inicio_' + idx).value = sessao.start || '00:00';
@@ -304,7 +399,7 @@ const char horarios_html[] PROGMEM = R"rawliteral(
                         });
                     }
                 })
-                .catch(function(erro) { console.error('Erro ao carregar agendamentos:', erro); });
+                .catch(function (erro) { console.error('Erro ao carregar agendamentos:', erro); });
         }
 
         /**
@@ -342,37 +437,37 @@ const char horarios_html[] PROGMEM = R"rawliteral(
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-            .then(function(resposta) {
-                return resposta.json().then(function(dados) {
-                    return { ok: resposta.ok, dados: dados };
-                });
-            })
-            .then(function(resultado) {
-                var msgEl = document.getElementById('msg_feedback');
-                msgEl.style.display = 'block';
+                .then(function (resposta) {
+                    return resposta.json().then(function (dados) {
+                        return { ok: resposta.ok, dados: dados };
+                    });
+                })
+                .then(function (resultado) {
+                    var msgEl = document.getElementById('msg_feedback');
+                    msgEl.style.display = 'block';
 
-                if (resultado.ok) {
-                    msgEl.className = 'msg-feedback msg-sucesso';
-                    msgEl.innerText = '✅ Programação salva com sucesso!';
-                } else {
+                    if (resultado.ok) {
+                        msgEl.className = 'msg-feedback msg-sucesso';
+                        msgEl.innerText = '✅ Programação salva com sucesso!';
+                    } else {
+                        msgEl.className = 'msg-feedback msg-erro';
+                        msgEl.innerText = '❌ ' + (resultado.dados.error || 'Erro desconhecido.');
+                    }
+
+                    // Esconder mensagem após 5 segundos
+                    setTimeout(function () { msgEl.style.display = 'none'; }, 5000);
+                })
+                .catch(function (erro) {
+                    var msgEl = document.getElementById('msg_feedback');
+                    msgEl.style.display = 'block';
                     msgEl.className = 'msg-feedback msg-erro';
-                    msgEl.innerText = '❌ ' + (resultado.dados.error || 'Erro desconhecido.');
-                }
-
-                // Esconder mensagem após 5 segundos
-                setTimeout(function() { msgEl.style.display = 'none'; }, 5000);
-            })
-            .catch(function(erro) {
-                var msgEl = document.getElementById('msg_feedback');
-                msgEl.style.display = 'block';
-                msgEl.className = 'msg-feedback msg-erro';
-                msgEl.innerText = '❌ Erro de comunicação com o dispositivo.';
-                console.error('Erro ao salvar:', erro);
-            })
-            .finally(function() {
-                botao.disabled = false;
-                botao.innerText = 'Salvar Programação';
-            });
+                    msgEl.innerText = '❌ Erro de comunicação com o dispositivo.';
+                    console.error('Erro ao salvar:', erro);
+                })
+                .finally(function () {
+                    botao.disabled = false;
+                    botao.innerText = 'Salvar Programação';
+                });
         }
 
         // Inicialização
@@ -380,6 +475,6 @@ const char horarios_html[] PROGMEM = R"rawliteral(
         window.onload = carregarAgendamentos;
     </script>
 </body>
-</html>
 
+</html>
 )rawliteral";
