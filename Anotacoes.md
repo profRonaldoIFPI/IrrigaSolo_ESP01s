@@ -228,6 +228,8 @@ if footer_partial:
    * *Resposta:* Ela instrui o SDK do ESP8266 a não gravar dados de conexão Wi-Fi na Flash interna a cada chamada de boot do rádio, evitando o desgaste prematuro da memória Flash e mantendo o LittleFS como única fonte de verdade.
 4. **Qual é a vantagem de utilizar o sistema de partials (templates parciais) na interface web do IrrigaSolo?**
    * *Resposta:* A vantagem é a modularidade e facilidade de manutenção (DRY - *Don't Repeat Yourself*). O desenvolvedor altera a folha de estilo ou a estrutura base da tag `<head>` em um único arquivo parcial (`head.html`) e o script de build propaga a mudança automaticamente para todas as páginas em tempo de compilação, sem gerar qualquer overhead de processamento ou consumo extra de RAM no hardware do ESP8266.
+5. **Por que a rota `/update` do servidor web é uma alternativa mais robusta à atualização OTA tradicional do Arduino (Push)?**
+   * *Resposta:* A rota `/update` baseia-se em um fluxo baseado em Pull (onde o navegador envia o binário via requisição HTTP padrão). Isso elimina problemas de bloqueio de firewall local que costumam interromper o ArduinoOTA nativo e permite atualizar o dispositivo de forma universal a partir de qualquer dispositivo conectado na mesma rede (ou no AP do próprio ESP8266), inclusive usando smartphones.
 
 ---
 

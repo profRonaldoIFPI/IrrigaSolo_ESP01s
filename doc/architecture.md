@@ -111,3 +111,15 @@ Utilizar a porta Serial nativa do ESP8266 (Serial.print) formatando a saída com
 
 ### Motivação
 Permitir depuração em bancada (USB) durante o desenvolvimento e diagnósticos rápidos de falha estrutural de arquivos de configuração.
+
+---
+
+# ADR-009 - Mecanismo de Atualização Remota (OTA)
+### Decisão
+Implementar a atualização remota (OTA - *Over-The-Air*) baseada em interface web local via biblioteca nativa `ESP8266HTTPUpdateServer` mapeada na rota `/update`.
+
+### Motivação
+A escolha de um atualizador web local (pull via interface de usuário) ao invés do protocolo nativo do ArduinoOTA (push via porta local do computador) se deve a:
+1. **Acessibilidade Universal:** O usuário/desenvolvedor pode atualizar o dispositivo estando tanto na rede local do roteador quanto conectado diretamente no Access Point nativo do ESP8266, sem precisar de ferramentas de build complexas instaladas.
+2. **Segurança de Rede e Firewall:** Evita falhas no processo causadas por firewalls do sistema operacional do host bloqueando portas efêmeras de escuta exigidas pelo ArduinoOTA.
+3. **Padrão de Mercado:** Segue o fluxo clássico adotado por roteadores e equipamentos residenciais inteligentes, onde o firmware é atualizado por meio de um arquivo `.bin` na página administrativa do equipamento.

@@ -38,9 +38,15 @@ O sistema deve operar de forma segura mesmo em cenários de corrupção de dados
 * **RF5.1:** Falha em configurações de rede: Assume valores AP padrão e aguarda intervenção.
 * **RF5.2:** Falha em configurações de irrigação: Mantém relés desligados, inibe acionamentos automáticos e registra o erro, mantendo a interface web acessível para reconfiguração.
 
+### RF6 - Atualização de Firmware Sem Fios (OTA)
+O sistema deve permitir a atualização de seu código-fonte remotamente pela rede sem necessidade de conexão física USB.
+* **RF6.1:** O firmware deve integrar um servidor de atualização HTTP acessível na rota `/update`.
+* **RF6.2:** A atualização deve aceitar arquivos binários compilados (`.bin`) enviados diretamente via formulário web no navegador.
+
 ## 3. Critérios de Aceitação (CA)
 
 * **CA-01:** Todos os relés devem iniciar estritamente desligados no momento em que o equipamento é energizado.
 * **CA-02:** Um canal habilitado liga no exato minuto programado e desliga automaticamente após decorrer a duração configurada. Horários desabilitados são ignorados.
 * **CA-03:** O sistema impede o salvamento e exibe erro caso o usuário tente cadastrar horários sobrepostos com a simultaneidade desativada.
 * **CA-04:** Alterações de rede e agendamentos sobrevivem a reinicializações físicas do hardware.
+* **CA-05:** O upload de um binário válido na rota `/update` atualiza o firmware de forma automática e reinicia o microcontrolador com a nova versão ativa.
