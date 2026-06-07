@@ -8,8 +8,7 @@
  * automaticamente em todo o firmware, evitando "números mágicos" espalhados
  * pelo código.
  *
- * Convenção de nomenclatura: SCREAMING_SNAKE_CASE para constantes e macros,
- * conforme o padrão coding-standards.md do projeto.
+ * Convenção de nomenclatura: SCREAMING_SNAKE_CASE para constantes e macros.
  */
 
 #include <Arduino.h>
