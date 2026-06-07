@@ -40,6 +40,46 @@
             font-size: 0.8rem;
             margin-top: 4px;
         }
+
+        /* Estilização premium do input de arquivo de upload OTA */
+        .file-input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.6);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .file-input::file-selector-button {
+            background-color: var(--primary);
+            color: #ffffff;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-right: 12px;
+            transition: background-color 0.2s ease;
+        }
+
+        .file-input::file-selector-button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-danger-ota {
+            background-color: var(--danger) !important;
+            margin-top: 5px;
+        }
+
+        .btn-danger-ota:hover {
+            background-color: var(--danger-hover) !important;
+            box-shadow: var(--glow-red) !important;
+        }
     </style>
 </head>
 
@@ -103,9 +143,9 @@
             <form method="POST" action="/update" enctype="multipart/form-data" id="form_ota">
                 <div class="form-group">
                     <label for="arquivo_ota">Selecione o arquivo firmware.bin</label>
-                    <input type="file" id="arquivo_ota" name="update" accept=".bin" required style="width:100%; padding:10px 0; color:var(--text-primary);">
+                    <input type="file" id="arquivo_ota" name="update" accept=".bin" class="file-input" required>
                 </div>
-                <button type="submit" class="btn-submit" id="btn_update_ota" style="background-color: var(--danger); margin-top: 5px;">
+                <button type="submit" class="btn-submit btn-danger-ota" id="btn_update_ota">
                     Realizar Atualização
                 </button>
             </form>
