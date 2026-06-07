@@ -34,4 +34,4 @@ for source_file in html_files:
     with open(header_file, "w", encoding="utf-8") as f:
         f.write(header_content)
 
-    print(f"[HTML2C] '{source_file}' foi convertido com sucesso para '{header_file}'")
+    print(f"[HTML_2_C] '{source_file}' foi convertido com sucesso para '{header_file}'")
