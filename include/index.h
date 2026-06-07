@@ -292,6 +292,11 @@ const char index_html[] PROGMEM = R"rawliteral(
             transform: translateY(-2px);
         }
 
+        .control-title {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
         .msg-feedback {
             text-align: center;
             padding: 10px;
@@ -381,7 +386,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 
         <!-- Controle de Canais -->
         <div class="card" id="card_controles">
-            <h3 style="margin-bottom: 15px; font-weight: 600;">Controle Canais</h3>
+            <h3 class="control-title">Controle Canais</h3>
 
             <!-- Canal 1 -->
             <div class="channel-control" id="controle_c1">

@@ -292,6 +292,11 @@ const char config_html[] PROGMEM = R"rawliteral(
             transform: translateY(-2px);
         }
 
+        .control-title {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
         .msg-feedback {
             text-align: center;
             padding: 10px;
@@ -426,6 +431,10 @@ const char config_html[] PROGMEM = R"rawliteral(
             background-color: var(--danger-hover) !important;
             box-shadow: var(--glow-red) !important;
         }
+
+        #btn_salvar_config {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -501,8 +510,7 @@ const char config_html[] PROGMEM = R"rawliteral(
         <!-- Mensagem de feedback -->
         <div class="msg-feedback" id="msg_feedback"></div>
 
-        <button class="btn-submit" id="btn_salvar_config" onclick="salvarConfiguracaoRede()"
-            style="margin-bottom: 20px;">
+        <button class="btn-submit" id="btn_salvar_config" onclick="salvarConfiguracaoRede()">
             Salvar Configurações
         </button>
 

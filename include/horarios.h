@@ -292,6 +292,11 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             transform: translateY(-2px);
         }
 
+        .control-title {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
         .msg-feedback {
             text-align: center;
             padding: 10px;
@@ -438,6 +443,10 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             height: 16px;
             cursor: pointer;
         }
+
+        #btn_salvar_horarios {
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 
@@ -498,7 +507,7 @@ const char horarios_html[] PROGMEM = R"rawliteral(
         <!-- Mensagem de feedback -->
         <div class="msg-feedback" id="msg_feedback"></div>
 
-        <button class="btn-submit" id="btn_salvar_horarios" onclick="salvarAgendamentos()" style="margin-bottom: 20px;">
+        <button class="btn-submit" id="btn_salvar_horarios" onclick="salvarAgendamentos()">
             Salvar Programação
         </button>
 
