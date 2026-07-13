@@ -67,15 +67,14 @@ static bool tentarConectarMqtt() {
     Serial.print(F("[MQTT] Tentando conectar ao broker: "));
     Serial.println(configRedeLocal.mqttBroker);
 
-    // Gerar um Client ID baseado no endereço MAC do ESP para evitar colisões
-    String clientId = "IrrigaSolo-";
-    clientId += WiFi.macAddress();
+    // Para Thinger.io, o Client ID deve ser exatamente o Device ID (armazenado em mqttTopicPrefix)
+    const char* clientId = configRedeLocal.mqttTopicPrefix;
 
     bool conectado = false;
     if (strlen(configRedeLocal.mqttUser) > 0) {
-        conectado = mqttClient.connect(clientId.c_str(), configRedeLocal.mqttUser, configRedeLocal.mqttPassword);
+        conectado = mqttClient.connect(clientId, configRedeLocal.mqttUser, configRedeLocal.mqttPassword);
     } else {
-        conectado = mqttClient.connect(clientId.c_str());
+        conectado = mqttClient.connect(clientId);
     }
 
     if (conectado) {

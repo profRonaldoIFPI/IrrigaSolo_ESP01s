@@ -40,12 +40,12 @@ static void aplicarDefaultsRede(ConfiguracaoRede& configRede) {
     configRede.fusoHorario       = FUSO_HORARIO_PADRAO;
     configRede.intervaloSyncNtp  = INTERVALO_NTP_PADRAO;
 
-    // Padrões MQTT
-    strlcpy(configRede.mqttBroker, "broker.hivemq.com", sizeof(configRede.mqttBroker));
+    // Padrões MQTT para Thinger.io
+    strlcpy(configRede.mqttBroker, "backend.thinger.io", sizeof(configRede.mqttBroker));
     configRede.mqttPort = 1883;
-    configRede.mqttUser[0] = '\0';
-    configRede.mqttPassword[0] = '\0';
-    strlcpy(configRede.mqttTopicPrefix, "irriga_solo", sizeof(configRede.mqttTopicPrefix));
+    strlcpy(configRede.mqttUser, "irrigasolo", sizeof(configRede.mqttUser)); // Valor sugerido como padrão
+    strlcpy(configRede.mqttPassword, "P4Bv6g!XHvH9L3", sizeof(configRede.mqttPassword));
+    strlcpy(configRede.mqttTopicPrefix, "irrigasolo", sizeof(configRede.mqttTopicPrefix)); // Device ID como prefixo e Client ID
 }
 
 /**
