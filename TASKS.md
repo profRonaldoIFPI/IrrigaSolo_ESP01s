@@ -70,7 +70,7 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Atualizar especificações e decisões arquiteturais em `/doc`
 - [x] Adicionar dependência PubSubClient no `platformio.ini`
 - [x] Atualizar arquivos de pinos de hardware (`pinosHardware.h`) e estruturas (`estruturas.h`)
-- [ ] Ajustar lógica de persistência JSON (`persistencia.cpp`)
+- [x] Ajustar lógica de persistência JSON (`persistencia.cpp`)
 - [ ] Implementar leitura do sensor de fluxo (`sensorFluxo.h` / `sensorFluxo.cpp`)
 - [ ] Implementar cliente MQTT (`clienteMqtt.h` / `clienteMqtt.cpp`)
 - [ ] Simplificar o agendador (`agendador.cpp`) para canal único

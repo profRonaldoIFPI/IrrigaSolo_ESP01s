@@ -39,24 +39,25 @@ static void aplicarDefaultsRede(ConfiguracaoRede& configRede) {
     strlcpy(configRede.servidorNtp,   SERVIDOR_NTP_PADRAO,  sizeof(configRede.servidorNtp));
     configRede.fusoHorario       = FUSO_HORARIO_PADRAO;
     configRede.intervaloSyncNtp  = INTERVALO_NTP_PADRAO;
+
+    // Padrões MQTT
+    strlcpy(configRede.mqttBroker, "broker.hivemq.com", sizeof(configRede.mqttBroker));
+    configRede.mqttPort = 1883;
+    configRede.mqttUser[0] = '\0';
+    configRede.mqttPassword[0] = '\0';
+    strlcpy(configRede.mqttTopicPrefix, "irriga_solo", sizeof(configRede.mqttTopicPrefix));
 }
 
 /**
  * Aplica os valores padrão seguros na struct de irrigação.
  * Todas as sessões ficam desabilitadas, impedindo acionamento
- * automático dos relés (RF5.2, CA-01).
+ * automático do relé (RF5.2, CA-01).
  */
 static void aplicarDefaultsIrrigacao(ConfiguracaoIrrigacao& configIrrigacao) {
-    configIrrigacao.permitirSimultaneidade = false;
-
     for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
         configIrrigacao.canal1[i].habilitada = false;
         strlcpy(configIrrigacao.canal1[i].inicio, "00:00", sizeof(configIrrigacao.canal1[i].inicio));
         configIrrigacao.canal1[i].duracao = 0;
-
-        configIrrigacao.canal2[i].habilitada = false;
-        strlcpy(configIrrigacao.canal2[i].inicio, "00:00", sizeof(configIrrigacao.canal2[i].inicio));
-        configIrrigacao.canal2[i].duracao = 0;
     }
 }
 
@@ -120,6 +121,21 @@ bool carregarConfiguracaoRede(ConfiguracaoRede& configRede) {
     configRede.fusoHorario      = documento["timeZone"]        | FUSO_HORARIO_PADRAO;
     configRede.intervaloSyncNtp = documento["ntpSyncInterval"] | INTERVALO_NTP_PADRAO;
 
+    // Extrair parâmetros MQTT
+    strlcpy(configRede.mqttBroker,
+            documento["mqttBroker"] | "broker.hivemq.com",
+            sizeof(configRede.mqttBroker));
+    configRede.mqttPort = documento["mqttPort"] | 1883;
+    strlcpy(configRede.mqttUser,
+            documento["mqttUser"] | "",
+            sizeof(configRede.mqttUser));
+    strlcpy(configRede.mqttPassword,
+            documento["mqttPwd"] | "",
+            sizeof(configRede.mqttPassword));
+    strlcpy(configRede.mqttTopicPrefix,
+            documento["mqttTopic"] | "irriga_solo",
+            sizeof(configRede.mqttTopicPrefix));
+
     Serial.println(F("[INFO] /network.json carregado com sucesso."));
     return true;
 }
@@ -134,6 +150,13 @@ bool salvarConfiguracaoRede(const ConfiguracaoRede& configRede) {
     documento["ntpServer"]       = configRede.servidorNtp;
     documento["timeZone"]        = configRede.fusoHorario;
     documento["ntpSyncInterval"] = configRede.intervaloSyncNtp;
+
+    // Campos MQTT
+    documento["mqttBroker"]      = configRede.mqttBroker;
+    documento["mqttPort"]        = configRede.mqttPort;
+    documento["mqttUser"]        = configRede.mqttUser;
+    documento["mqttPwd"]         = configRede.mqttPassword;
+    documento["mqttTopic"]       = configRede.mqttTopicPrefix;
 
     File arquivo = LittleFS.open(CAMINHO_NETWORK, "w");
     if (!arquivo) {
@@ -178,8 +201,6 @@ bool carregarConfiguracaoIrrigacao(ConfiguracaoIrrigacao& configIrrigacao) {
         return false;
     }
 
-    configIrrigacao.permitirSimultaneidade = documento["allowSimultaneous"] | false;
-
     // Deserializar sessões do Canal 1
     JsonArray arrayCh1 = documento["channel1"].as<JsonArray>();
     for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
@@ -200,33 +221,12 @@ bool carregarConfiguracaoIrrigacao(ConfiguracaoIrrigacao& configIrrigacao) {
         yield(); // Alimentar o WDT durante parsing de arrays (restrição embarcada)
     }
 
-    // Deserializar sessões do Canal 2
-    JsonArray arrayCh2 = documento["channel2"].as<JsonArray>();
-    for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
-        if (arrayCh2 && i < arrayCh2.size()) {
-            JsonObject sessao = arrayCh2[i];
-            configIrrigacao.canal2[i].habilitada = sessao["enabled"] | false;
-            strlcpy(configIrrigacao.canal2[i].inicio,
-                    sessao["start"] | "00:00",
-                    sizeof(configIrrigacao.canal2[i].inicio));
-            configIrrigacao.canal2[i].duracao = sessao["duration"] | 0;
-        } else {
-            configIrrigacao.canal2[i].habilitada = false;
-            strlcpy(configIrrigacao.canal2[i].inicio, "00:00",
-                    sizeof(configIrrigacao.canal2[i].inicio));
-            configIrrigacao.canal2[i].duracao = 0;
-        }
-        yield();
-    }
-
     Serial.println(F("[INFO] /irrigation.json carregado com sucesso."));
     return true;
 }
 
 bool salvarConfiguracaoIrrigacao(const ConfiguracaoIrrigacao& configIrrigacao) {
     JsonDocument documento;
-
-    documento["allowSimultaneous"] = configIrrigacao.permitirSimultaneidade;
 
     // Serializar Canal 1
     JsonArray arrayCh1 = documento["channel1"].to<JsonArray>();
@@ -235,15 +235,6 @@ bool salvarConfiguracaoIrrigacao(const ConfiguracaoIrrigacao& configIrrigacao) {
         sessao["enabled"]  = configIrrigacao.canal1[i].habilitada;
         sessao["start"]    = configIrrigacao.canal1[i].inicio;
         sessao["duration"] = configIrrigacao.canal1[i].duracao;
-    }
-
-    // Serializar Canal 2
-    JsonArray arrayCh2 = documento["channel2"].to<JsonArray>();
-    for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
-        JsonObject sessao = arrayCh2.add<JsonObject>();
-        sessao["enabled"]  = configIrrigacao.canal2[i].habilitada;
-        sessao["start"]    = configIrrigacao.canal2[i].inicio;
-        sessao["duration"] = configIrrigacao.canal2[i].duracao;
     }
 
     File arquivo = LittleFS.open(CAMINHO_IRRIGATION, "w");
