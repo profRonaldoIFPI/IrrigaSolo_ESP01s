@@ -26,10 +26,17 @@
 static const uint8_t PINO_RELE_CANAL_1 = D1; // GPIO5
 
 /**
- * Canal 2 conectado ao pino D2 (GPIO4) do NodeMCU.
- * Mesma justificativa de segurança do Canal 1.
+ * Pino de sinal do sensor de fluxo de água YF-S201B.
+ * Conectado ao pino D5 (GPIO14) do NodeMCU.
+ * Suporta interrupções externas de forma estável.
  */
-static const uint8_t PINO_RELE_CANAL_2 = D2; // GPIO4
+static const uint8_t PINO_SENSOR_FLUXO = D5; // GPIO14
+
+/**
+ * Fator de calibração do sensor de fluxo YF-S201B.
+ * Frequência de pulsos (Hz) = 7.5 * Vazão (L/min).
+ */
+static const float FATOR_CALIBRACAO_FLUXO = 7.5f;
 
 /**
  * LED onboard do NodeMCU (D4 / GPIO2).
@@ -43,7 +50,7 @@ static const uint8_t PINO_LED_STATUS = D4; // GPIO2
 // ---------------------------------------------------------------------------
 // Número de Canais de Irrigação
 // ---------------------------------------------------------------------------
-static const uint8_t TOTAL_CANAIS = 2;
+static const uint8_t TOTAL_CANAIS = 1;
 
 // ---------------------------------------------------------------------------
 // Limites de Agendamento (RF1.1: até 6 sessões por canal por dia)

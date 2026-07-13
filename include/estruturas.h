@@ -40,9 +40,9 @@ struct SessaoIrrigacao {
 // ---------------------------------------------------------------------------
 
 /**
- * Representa todas as configurações de rede e NTP persistidas no LittleFS.
+ * Representa todas as configurações de rede, NTP e MQTT persistidas no LittleFS.
  * Os tamanhos dos buffers foram dimensionados para os limites práticos
- * do ESP8266 (SSID: 32 chars, senha WPA2: 63 chars, URL NTP: 64 chars).
+ * do ESP8266.
  */
 struct ConfiguracaoRede {
     char     ssidAp[33];         // SSID do Access Point
@@ -52,6 +52,13 @@ struct ConfiguracaoRede {
     char     servidorNtp[65];    // URL do servidor NTP
     int8_t   fusoHorario;        // Offset UTC (ex: -3 para Brasília)
     uint32_t intervaloSyncNtp;   // Intervalo de sincronização em segundos
+
+    // Parâmetros MQTT (RF2.2)
+    char     mqttBroker[65];     // Servidor do Broker MQTT
+    uint16_t mqttPort;           // Porta do Broker MQTT
+    char     mqttUser[33];       // Usuário MQTT (opcional)
+    char     mqttPassword[65];   // Senha MQTT (opcional)
+    char     mqttTopicPrefix[33]; // Prefixo dos tópicos (ex: "irriga_solo")
 };
 
 // ---------------------------------------------------------------------------
@@ -59,14 +66,8 @@ struct ConfiguracaoRede {
 // ---------------------------------------------------------------------------
 
 /**
- * Agrupa a configuração completa de irrigação: a flag de simultaneidade
- * (RF3) e os arrays de sessões dos dois canais.
- *
- * Quando 'permitirSimultaneidade' é false, o firmware impede que horários
- * de Canal 1 e Canal 2 se sobreponham (ADR-006, RF3.1).
+ * Agrupa a configuração completa de irrigação para o canal único.
  */
 struct ConfiguracaoIrrigacao {
-    bool             permitirSimultaneidade;
     SessaoIrrigacao  canal1[MAX_SESSOES_POR_CANAL];
-    SessaoIrrigacao  canal2[MAX_SESSOES_POR_CANAL];
 };
