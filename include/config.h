@@ -492,6 +492,32 @@ const char config_html[] PROGMEM = R"rawliteral(
             </div>
         </div>
 
+        <!-- Configuração MQTT (RF2.2) -->
+        <div class="card" id="card_config_mqtt">
+            <h2>Conexão MQTT</h2>
+            <div class="form-group">
+                <label for="campo_mqtt_broker">Broker Server</label>
+                <input type="text" id="campo_mqtt_broker" placeholder="broker.hivemq.com" maxlength="64">
+            </div>
+            <div class="form-group">
+                <label for="campo_mqtt_port">Porta</label>
+                <input type="number" id="campo_mqtt_port" value="1883" min="1" max="65535">
+            </div>
+            <div class="form-group">
+                <label for="campo_mqtt_user">Usuário (Opcional)</label>
+                <input type="text" id="campo_mqtt_user" placeholder="Deixe vazio se não necessário" maxlength="32">
+            </div>
+            <div class="form-group">
+                <label for="campo_mqtt_pwd">Senha (Opcional)</label>
+                <input type="password" id="campo_mqtt_pwd" placeholder="Senha do Broker" maxlength="64">
+                <div class="form-hint">Deixe em branco para manter a senha atual.</div>
+            </div>
+            <div class="form-group">
+                <label for="campo_mqtt_topic">Prefixo do Tópico</label>
+                <input type="text" id="campo_mqtt_topic" placeholder="irriga_solo" maxlength="32">
+            </div>
+        </div>
+
         <!-- Atualização de Firmware (OTA) -->
         <div class="card" id="card_config_ota">
             <h2>Atualização de Firmware (OTA)</h2>
@@ -534,6 +560,11 @@ const char config_html[] PROGMEM = R"rawliteral(
                     document.getElementById('campo_servidor_ntp').value = dados.ntpServer || 'pool.ntp.br';
                     document.getElementById('campo_fuso_horario').value = dados.timeZone !== undefined ? dados.timeZone : -3;
                     document.getElementById('campo_intervalo_ntp').value = dados.ntpSyncInterval || 21600;
+                    
+                    document.getElementById('campo_mqtt_broker').value = dados.mqttBroker || 'broker.hivemq.com';
+                    document.getElementById('campo_mqtt_port').value = dados.mqttPort || 1883;
+                    document.getElementById('campo_mqtt_user').value = dados.mqttUser || '';
+                    document.getElementById('campo_mqtt_topic').value = dados.mqttTopic || 'irriga_solo';
                 })
                 .catch(function (erro) { console.error('Erro ao carregar config de rede:', erro); });
         }
@@ -552,7 +583,12 @@ const char config_html[] PROGMEM = R"rawliteral(
                 ssidSta: document.getElementById('campo_ssid_sta').value,
                 ntpServer: document.getElementById('campo_servidor_ntp').value,
                 timeZone: parseInt(document.getElementById('campo_fuso_horario').value) || -3,
-                ntpSyncInterval: parseInt(document.getElementById('campo_intervalo_ntp').value) || 21600
+                ntpSyncInterval: parseInt(document.getElementById('campo_intervalo_ntp').value) || 21600,
+                
+                mqttBroker: document.getElementById('campo_mqtt_broker').value,
+                mqttPort: parseInt(document.getElementById('campo_mqtt_port').value) || 1883,
+                mqttUser: document.getElementById('campo_mqtt_user').value,
+                mqttTopic: document.getElementById('campo_mqtt_topic').value
             };
 
             // Incluir senhas apenas se preenchidas
@@ -561,6 +597,9 @@ const char config_html[] PROGMEM = R"rawliteral(
 
             var senhaSta = document.getElementById('campo_senha_sta').value;
             if (senhaSta.length > 0) { payload.pwdSta = senhaSta; }
+            
+            var mqttPwd = document.getElementById('campo_mqtt_pwd').value;
+            if (mqttPwd.length > 0) { payload.mqttPwd = mqttPwd; }
 
             fetch('/api/network', {
                 method: 'POST',

@@ -17,8 +17,7 @@
  *   - verificarConexaoWifi()    → Monitora STA, fallback AP
  *   - atualizarNtp()            → Resincroniza relógio
  *   - avaliarAgendamentos()     → Polling a cada 1s (ADR-005)
- *
- * Requisitos atendidos: Todos (integração final).
+ * Requisitos atendidos: Todos (canal único, sensor de fluxo e MQTT).
  */
 
 #include "pinosHardware.h"
@@ -28,6 +27,8 @@
 #include "relogioNtp.h"
 #include "agendador.h"
 #include "servidorWeb.h"
+#include "sensorFluxo.h"
+#include "clienteMqtt.h"
 
 // ---------------------------------------------------------------------------
 // Variáveis globais do sistema
@@ -39,12 +40,13 @@ static ConfiguracaoRede configRede;
 /** Configuração de irrigação carregada do LittleFS (ADR-004) */
 static ConfiguracaoIrrigacao configIrrigacao;
 
-/** Timestamp da última avaliação de agendamentos (para controle via millis) */
+/** Timestamps das avaliações de tempo (controle via millis) */
 static unsigned long ultimaAvaliacaoMs = 0;
+static unsigned long ultimaPublicacaoMqttMs = 0;
 
 /**
  * Flag que indica se a configuração de irrigação está válida.
- * Se false, o agendador não aciona relés automaticamente (RF5.2).
+ * Se false, o agendador não aciona relés automaticamente (RF6.2).
  */
 static bool irrigacaoConfiguradaComSucesso = false;
 
@@ -55,7 +57,7 @@ static bool irrigacaoConfiguradaComSucesso = false;
 void setup() {
     // -----------------------------------------------------------------------
     // PASSO 1: Segurança elétrica — Relés em LOW ANTES de tudo (ADR-007, CA-01)
-    // Garante que flutuações de GPIO durante o boot não acionem válvulas.
+    // Garante que flutuações de GPIO durante o boot não acionem a válvula.
     // -----------------------------------------------------------------------
     inicializarReles();
 
@@ -65,7 +67,7 @@ void setup() {
     Serial.begin(VELOCIDADE_SERIAL);
     Serial.println();
     Serial.println(F("========================================"));
-    Serial.println(F("  IrrigaSolo v1.0 — Inicializando..."));
+    Serial.println(F("  IrrigaSolo v1.1 — Inicializando..."));
     Serial.println(F("========================================"));
 
     // -----------------------------------------------------------------------
@@ -73,7 +75,6 @@ void setup() {
     // -----------------------------------------------------------------------
     if (!inicializarLittleFS()) {
         Serial.println(F("[ERROR] Boot sem LittleFS. Operando com defaults."));
-        // Continua com defaults — o sistema será funcional em modo AP
     }
 
     // -----------------------------------------------------------------------
@@ -83,8 +84,8 @@ void setup() {
     irrigacaoConfiguradaComSucesso = carregarConfiguracaoIrrigacao(configIrrigacao);
 
     if (!irrigacaoConfiguradaComSucesso) {
-        // RF5.2: Falha na configuração de irrigação — relés permanecem inativos
-        Serial.println(F("[WARN] Irrigação operando com defaults seguros (relés inativos)."));
+        // RF6.2: Falha na configuração de irrigação — relés permanecem inativos
+        Serial.println(F("[WARN] Irrigação operando com defaults seguros (relé inativo)."));
     }
 
     // -----------------------------------------------------------------------
@@ -98,9 +99,17 @@ void setup() {
     inicializarNtp(configRede);
 
     // -----------------------------------------------------------------------
-    // PASSO 7: Servidor Web HTTP (última inicialização)
-    // Passa ponteiros para as structs de configuração para que os endpoints
-    // possam ler e modificar os dados em tempo real.
+    // PASSO 7: Sensor de Fluxo — Anexar interrupção de hardware (ADR-006, RF3)
+    // -----------------------------------------------------------------------
+    inicializarSensorFluxo();
+
+    // -----------------------------------------------------------------------
+    // PASSO 8: MQTT — Inicializar cliente (ADR-010, RF5)
+    // -----------------------------------------------------------------------
+    inicializarMqtt(configRede);
+
+    // -----------------------------------------------------------------------
+    // PASSO 9: Servidor Web HTTP (última inicialização)
     // -----------------------------------------------------------------------
     inicializarServidor(&configRede, &configIrrigacao);
 
@@ -114,7 +123,7 @@ void setup() {
 // ---------------------------------------------------------------------------
 
 void loop() {
-    // Atender requisições HTTP pendentes (não-bloqueante)
+    // Atender requisições HTTP pendentes
     processarRequisicoes();
 
     // Monitorar estado da conexão Wi-Fi e fallback AP (RF2.3)
@@ -123,9 +132,15 @@ void loop() {
     // Atualizar relógio NTP (o cliente gerencia o intervalo internamente)
     atualizarNtp();
 
-    // Avaliar agendamentos a cada INTERVALO_AVALIACAO_MS (1 segundo)
-    // Apenas se a configuração de irrigação foi carregada com sucesso.
+    // Processar o cálculo do sensor de fluxo de forma assíncrona (RF3.1, RF3.2)
+    processarSensorFluxo();
+
+    // Processar loop de conexão e escuta do MQTT (RF5.2)
+    processarMqtt();
+
     unsigned long agora = millis();
+
+    // Avaliar agendamentos a cada INTERVALO_AVALIACAO_MS (1 segundo)
     if (agora - ultimaAvaliacaoMs >= INTERVALO_AVALIACAO_MS) {
         ultimaAvaliacaoMs = agora;
 
@@ -133,5 +148,11 @@ void loop() {
             int minutoAtual = obterMinutosDesdeMeiaNoite();
             avaliarAgendamentos(configIrrigacao, minutoAtual);
         }
+    }
+
+    // Publicar telemetria MQTT a cada 5 segundos (RF5.1)
+    if (agora - ultimaPublicacaoMqttMs >= 5000) {
+        ultimaPublicacaoMqttMs = agora;
+        publicarTelemetria(obterEstadoRele(1), obterVazaoLMin(), obterVolumeTotalL());
     }
 }

@@ -23,6 +23,8 @@
 #include "agendador.h"
 #include "redeWifi.h"
 #include "relogioNtp.h"
+#include "sensorFluxo.h"
+#include "clienteMqtt.h"
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include <ArduinoJson.h>
@@ -76,10 +78,12 @@ static void handleApiStatus() {
     documento["date"]          = obterDataFormatada();
     documento["wifiConnected"] = estaConectadoSta();
     documento["ip"]            = obterIpAtual();
+    documento["mqttConnected"] = obterEstadoConexaoMqtt();
     documento["c1State"]       = obterEstadoRele(1);
-    documento["c2State"]       = obterEstadoRele(2);
+    documento["vazao"]         = obterVazaoLMin();
+    documento["volume"]        = obterVolumeTotalL();
 
-    char buffer[256];
+    char buffer[384];
     serializeJson(documento, buffer, sizeof(buffer));
     servidor.send(200, "application/json", buffer);
 }
@@ -98,12 +102,21 @@ static void handleApiControl() {
     uint8_t canal  = servidor.arg("channel").toInt();
     bool    estado = servidor.arg("state").toInt() == 1;
 
-    if (canal < 1 || canal > TOTAL_CANAIS) {
-        servidor.send(400, "application/json", "{\"error\":\"Canal inválido. Use 1 ou 2.\"}");
+    if (canal != 1) {
+        servidor.send(400, "application/json", "{\"error\":\"Canal inválido. Apenas canal 1 disponível.\"}");
         return;
     }
 
     controleManual(canal, estado);
+    servidor.send(200, "application/json", "{\"ok\":true}");
+}
+
+/**
+ * POST /api/zerar
+ * Reseta o acumulador de volume do sensor de fluxo de água (RF3.3).
+ */
+static void handleApiZerarVolume() {
+    zerarVolumeTotal();
     servidor.send(200, "application/json", "{\"ok\":true}");
 }
 
@@ -123,7 +136,6 @@ static void handleApiGetSchedules() {
     }
 
     JsonDocument documento;
-    documento["allowSimultaneous"] = ptrConfigIrrigacao->permitirSimultaneidade;
 
     JsonArray arrayCh1 = documento["channel1"].to<JsonArray>();
     for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
@@ -133,15 +145,7 @@ static void handleApiGetSchedules() {
         sessao["duration"] = ptrConfigIrrigacao->canal1[i].duracao;
     }
 
-    JsonArray arrayCh2 = documento["channel2"].to<JsonArray>();
-    for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
-        JsonObject sessao = arrayCh2.add<JsonObject>();
-        sessao["enabled"]  = ptrConfigIrrigacao->canal2[i].habilitada;
-        sessao["start"]    = ptrConfigIrrigacao->canal2[i].inicio;
-        sessao["duration"] = ptrConfigIrrigacao->canal2[i].duracao;
-    }
-
-    char buffer[768];
+    char buffer[384];
     serializeJson(documento, buffer, sizeof(buffer));
     servidor.send(200, "application/json", buffer);
 }
@@ -168,9 +172,8 @@ static void handleApiPostSchedules() {
         return;
     }
 
-    // Montar struct temporária para validação antes de aplicar
+    // Montar struct temporária para validação
     ConfiguracaoIrrigacao configTemporaria;
-    configTemporaria.permitirSimultaneidade = documento["allowSimultaneous"] | false;
 
     // Deserializar Canal 1
     JsonArray arrayCh1 = documento["channel1"].as<JsonArray>();
@@ -190,33 +193,7 @@ static void handleApiPostSchedules() {
         }
     }
 
-    // Deserializar Canal 2
-    JsonArray arrayCh2 = documento["channel2"].as<JsonArray>();
-    for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
-        if (arrayCh2 && i < arrayCh2.size()) {
-            JsonObject sessao = arrayCh2[i];
-            configTemporaria.canal2[i].habilitada = sessao["enabled"] | false;
-            strlcpy(configTemporaria.canal2[i].inicio,
-                    sessao["start"] | "00:00",
-                    sizeof(configTemporaria.canal2[i].inicio));
-            configTemporaria.canal2[i].duracao = sessao["duration"] | 0;
-        } else {
-            configTemporaria.canal2[i].habilitada = false;
-            strlcpy(configTemporaria.canal2[i].inicio, "00:00",
-                    sizeof(configTemporaria.canal2[i].inicio));
-            configTemporaria.canal2[i].duracao = 0;
-        }
-    }
-
-    // ADR-006: Validação obrigatória de conflitos no backend
-    if (!validarConflitos(configTemporaria)) {
-        servidor.send(400, "application/json",
-                      "{\"error\":\"Conflito de horários detectado entre Canal 1 e Canal 2. "
-                      "Desative a sobreposição ou habilite a simultaneidade.\"}");
-        return;
-    }
-
-    // Validação aprovada — aplicar e persistir
+    // Aplicar e persistir
     *ptrConfigIrrigacao = configTemporaria;
 
     if (salvarConfiguracaoIrrigacao(*ptrConfigIrrigacao)) {
@@ -246,9 +223,14 @@ static void handleApiGetNetwork() {
     documento["ntpServer"]       = ptrConfigRede->servidorNtp;
     documento["timeZone"]        = ptrConfigRede->fusoHorario;
     documento["ntpSyncInterval"] = ptrConfigRede->intervaloSyncNtp;
-    // Senhas não são enviadas ao frontend por segurança
+    
+    // Parâmetros MQTT (sem senha)
+    documento["mqttBroker"]      = ptrConfigRede->mqttBroker;
+    documento["mqttPort"]        = ptrConfigRede->mqttPort;
+    documento["mqttUser"]        = ptrConfigRede->mqttUser;
+    documento["mqttTopic"]       = ptrConfigRede->mqttTopicPrefix;
 
-    char buffer[256];
+    char buffer[384];
     serializeJson(documento, buffer, sizeof(buffer));
     servidor.send(200, "application/json", buffer);
 }
@@ -296,6 +278,23 @@ static void handleApiPostNetwork() {
     if (documento["ntpSyncInterval"].is<unsigned long>()) {
         ptrConfigRede->intervaloSyncNtp = documento["ntpSyncInterval"];
     }
+    
+    // Parâmetros MQTT
+    if (documento["mqttBroker"].is<const char*>()) {
+        strlcpy(ptrConfigRede->mqttBroker, documento["mqttBroker"], sizeof(ptrConfigRede->mqttBroker));
+    }
+    if (documento["mqttPort"].is<int>()) {
+        ptrConfigRede->mqttPort = documento["mqttPort"];
+    }
+    if (documento["mqttUser"].is<const char*>()) {
+        strlcpy(ptrConfigRede->mqttUser, documento["mqttUser"], sizeof(ptrConfigRede->mqttUser));
+    }
+    if (documento["mqttPwd"].is<const char*>()) {
+        strlcpy(ptrConfigRede->mqttPassword, documento["mqttPwd"], sizeof(ptrConfigRede->mqttPassword));
+    }
+    if (documento["mqttTopic"].is<const char*>()) {
+        strlcpy(ptrConfigRede->mqttTopicPrefix, documento["mqttTopic"], sizeof(ptrConfigRede->mqttTopicPrefix));
+    }
 
     if (!salvarConfiguracaoRede(*ptrConfigRede)) {
         servidor.send(500, "application/json", "{\"error\":\"Falha ao salvar no LittleFS.\"}");
@@ -304,11 +303,12 @@ static void handleApiPostNetwork() {
 
     servidor.send(200, "application/json", "{\"ok\":true,\"message\":\"Configuração salva. Reconectando...\"}");
 
-    // Reinicializar Wi-Fi com as novas credenciais
-    Serial.println(F("[INFO] Reinicializando Wi-Fi com novas credenciais..."));
+    // Reinicializar Wi-Fi e MQTT com as novas credenciais
+    Serial.println(F("[INFO] Reinicializando conexoes com novas credenciais..."));
     delay(500); // Pequeno delay para garantir que a resposta HTTP foi enviada
     inicializarWifi(*ptrConfigRede);
     inicializarNtp(*ptrConfigRede);
+    inicializarMqtt(*ptrConfigRede);
 }
 
 // ---------------------------------------------------------------------------
@@ -335,6 +335,7 @@ void inicializarServidor(ConfiguracaoRede* configRede, ConfiguracaoIrrigacao* co
     // API de status e controle
     servidor.on("/api/status",  HTTP_GET,  handleApiStatus);
     servidor.on("/api/control", HTTP_POST, handleApiControl);
+    servidor.on("/api/zerar",   HTTP_POST, handleApiZerarVolume);
 
     // API de agendamentos
     servidor.on("/api/schedules", HTTP_GET,  handleApiGetSchedules);

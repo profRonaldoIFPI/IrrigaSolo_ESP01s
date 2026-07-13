@@ -382,16 +382,22 @@ const char index_html[] PROGMEM = R"rawliteral(
                 <span class="status-label">IP do Dispositivo</span>
                 <span class="status-value" id="val_ip">0.0.0.0</span>
             </div>
+            <div class="status-row">
+                <span class="status-label">Conexão MQTT</span>
+                <span class="status-value" id="status_mqtt">
+                    <span class="status-badge badge-disconnected" id="badge_mqtt">Desconectado</span>
+                </span>
+            </div>
         </div>
 
-        <!-- Controle de Canais -->
+        <!-- Controle da Válvula & Medição -->
         <div class="card" id="card_controles">
-            <h3 class="control-title">Controle Canais</h3>
+            <h3 class="control-title">Controle & Medição</h3>
 
-            <!-- Canal 1 -->
+            <!-- Válvula -->
             <div class="channel-control" id="controle_c1">
                 <div class="channel-info">
-                    <span class="channel-name">Canal 1</span>
+                    <span class="channel-name">Válvula de Irrigação</span>
                     <span class="channel-status" id="lbl_status_c1">Status: <span class="status-off"
                             id="val_status_c1">Desligado</span></span>
                 </div>
@@ -401,16 +407,18 @@ const char index_html[] PROGMEM = R"rawliteral(
                 </div>
             </div>
 
-            <!-- Canal 2 -->
-            <div class="channel-control" id="controle_c2">
-                <div class="channel-info">
-                    <span class="channel-name">Canal 2</span>
-                    <span class="channel-status" id="lbl_status_c2">Status: <span class="status-off"
-                            id="val_status_c2">Desligado</span></span>
+            <!-- Medições de Fluxo (RF3) -->
+            <div class="flow-display" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                <div class="status-row">
+                    <span class="status-label">Vazão Instantânea</span>
+                    <span class="status-value" id="val_vazao" style="font-weight: bold;">0.00 L/min</span>
                 </div>
-                <div class="btn-group">
-                    <button class="btn-on" id="btn_c2_ligar" onclick="controlarCanal(2, 1)">Ligar</button>
-                    <button class="btn-off" id="btn_c2_desligar" onclick="controlarCanal(2, 0)">Desligar</button>
+                <div class="status-row">
+                    <span class="status-label">Volume Acumulado</span>
+                    <span class="status-value" id="val_volume" style="font-weight: bold;">0.00 Litros</span>
+                </div>
+                <div style="text-align: right; margin-top: 10px;">
+                    <button class="nav-btn" style="padding: 6px 12px; font-size: 0.85em; background-color: #d9534f;" onclick="zerarVolume()">Zerar Volume</button>
                 </div>
             </div>
         </div>
@@ -448,7 +456,16 @@ const char index_html[] PROGMEM = R"rawliteral(
 
                     document.getElementById('val_ip').innerText = dados.ip || '0.0.0.0';
 
-                    // Atualizar estado do Canal 1
+                    var badgeMqtt = document.getElementById('badge_mqtt');
+                    if (dados.mqttConnected) {
+                        badgeMqtt.innerText = 'Conectado';
+                        badgeMqtt.className = 'status-badge badge-connected';
+                    } else {
+                        badgeMqtt.innerText = 'Desconectado';
+                        badgeMqtt.className = 'status-badge badge-disconnected';
+                    }
+
+                    // Atualizar estado da Válvula (Canal 1)
                     var statusC1 = document.getElementById('val_status_c1');
                     if (dados.c1State) {
                         statusC1.innerText = 'Ligado';
@@ -458,15 +475,9 @@ const char index_html[] PROGMEM = R"rawliteral(
                         statusC1.className = 'status-off';
                     }
 
-                    // Atualizar estado do Canal 2
-                    var statusC2 = document.getElementById('val_status_c2');
-                    if (dados.c2State) {
-                        statusC2.innerText = 'Ligado';
-                        statusC2.className = 'status-on';
-                    } else {
-                        statusC2.innerText = 'Desligado';
-                        statusC2.className = 'status-off';
-                    }
+                    // Atualizar dados do sensor de fluxo
+                    document.getElementById('val_vazao').innerText = (dados.vazao !== undefined ? dados.vazao.toFixed(2) : '0.00') + ' L/min';
+                    document.getElementById('val_volume').innerText = (dados.volume !== undefined ? dados.volume.toFixed(2) : '0.00') + ' Litros';
                 })
                 .catch(function (erro) { console.error('Erro ao obter status:', erro); });
         }
@@ -485,6 +496,23 @@ const char index_html[] PROGMEM = R"rawliteral(
                     }
                 })
                 .catch(function (erro) { console.error('Erro no controle manual:', erro); });
+        }
+
+        /**
+         * Zera o volume acumulado de água via POST /api/zerar.
+         */
+        function zerarVolume() {
+            if (confirm('Deseja realmente zerar o volume acumulado de água?')) {
+                fetch('/api/zerar', { method: 'POST' })
+                    .then(function (resposta) {
+                        if (resposta.ok) {
+                            atualizarStatus();
+                        } else {
+                            alert('Erro ao zerar volume.');
+                        }
+                    })
+                    .catch(function (erro) { console.error('Erro ao zerar volume:', erro); });
+            }
         }
 
         // Polling a cada 2 segundos para atualização em tempo real

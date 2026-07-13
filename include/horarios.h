@@ -459,7 +459,7 @@ const char horarios_html[] PROGMEM = R"rawliteral(
 
         <!-- Canal 1 -->
         <div class="card" id="card_c1_agendamentos">
-            <h2>Canal 1</h2>
+            <h2>Válvula de Irrigação (Canal 1)</h2>
             <div class="table-responsive">
                 <table id="tbl_c1">
                     <thead>
@@ -474,36 +474,6 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             </div>
         </div>
 
-        <!-- Canal 2 -->
-        <div class="card" id="card_c2_agendamentos">
-            <h2>Canal 2</h2>
-            <div class="table-responsive">
-                <table id="tbl_c2">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;">Ativo</th>
-                            <th style="width: 45%;">Horário de Início</th>
-                            <th style="width: 40%;">Duração (min)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbody_c2"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Simultaneidade -->
-        <div class="card" id="card_simultaneidade">
-            <span class="option-label" id="lbl_simultaneidade">Permitir abertura simultânea dos canais?</span>
-            <div class="option-group" id="grupo_simultaneidade">
-                <label class="radio-item" id="lbl_sim_sim">
-                    <input type="radio" name="permitirSimultaneidade" id="sim_sim" value="1"> Sim
-                </label>
-                <label class="radio-item" id="lbl_sim_nao">
-                    <input type="radio" name="permitirSimultaneidade" id="sim_nao" value="0" checked> Não
-                </label>
-            </div>
-        </div>
-
         <!-- Mensagem de feedback -->
         <div class="msg-feedback" id="msg_feedback"></div>
 
@@ -511,7 +481,7 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             Salvar Programação
         </button>
 
-        <a href="/" class="nav-back" id="link_voltar_painel">⬅ Voltar ao Panel</a>
+        <a href="/" class="nav-back" id="link_voltar_painel">⬅ Voltar ao Painel</a>
 
                 <footer>IrrigaSolo v1.0 • @copyright Ronaldo Borges - 2026</footer>
 
@@ -522,15 +492,13 @@ const char horarios_html[] PROGMEM = R"rawliteral(
 
         /**
          * Gera dinamicamente as linhas da tabela de horários.
-         * Evita duplicação de HTML estático para 6 slots × 2 canais.
+         * Evita duplicação de HTML estático.
          */
         function gerarLinhasTabela() {
             var tbodyC1 = document.getElementById('tbody_c1');
-            var tbodyC2 = document.getElementById('tbody_c2');
 
             for (var i = 0; i < TOTAL_SLOTS; i++) {
                 tbodyC1.innerHTML += criarLinhaSlot('c1', i);
-                tbodyC2.innerHTML += criarLinhaSlot('c2', i);
             }
         }
 
@@ -549,13 +517,6 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             fetch('/api/schedules')
                 .then(function (resposta) { return resposta.json(); })
                 .then(function (dados) {
-                    // Simultaneidade
-                    if (dados.allowSimultaneous) {
-                        document.getElementById('sim_sim').checked = true;
-                    } else {
-                        document.getElementById('sim_nao').checked = true;
-                    }
-
                     // Canal 1
                     if (dados.channel1) {
                         dados.channel1.forEach(function (sessao, idx) {
@@ -566,25 +527,12 @@ const char horarios_html[] PROGMEM = R"rawliteral(
                             }
                         });
                     }
-
-                    // Canal 2
-                    if (dados.channel2) {
-                        dados.channel2.forEach(function (sessao, idx) {
-                            if (idx < TOTAL_SLOTS) {
-                                document.getElementById('c2_ativo_' + idx).checked = sessao.enabled;
-                                document.getElementById('c2_inicio_' + idx).value = sessao.start || '00:00';
-                                document.getElementById('c2_duracao_' + idx).value = sessao.duration || 10;
-                            }
-                        });
-                    }
                 })
                 .catch(function (erro) { console.error('Erro ao carregar agendamentos:', erro); });
         }
 
         /**
          * Envia os agendamentos ao backend via POST /api/schedules (JSON).
-         * O backend valida conflitos e retorna HTTP 400 se houver
-         * sobreposição com simultaneidade desativada (ADR-006, CA-03).
          */
         function salvarAgendamentos() {
             var botao = document.getElementById('btn_salvar_horarios');
@@ -592,9 +540,7 @@ const char horarios_html[] PROGMEM = R"rawliteral(
             botao.innerText = 'Salvando...';
 
             var payload = {
-                allowSimultaneous: document.getElementById('sim_sim').checked,
-                channel1: [],
-                channel2: []
+                channel1: []
             };
 
             for (var i = 0; i < TOTAL_SLOTS; i++) {
@@ -602,12 +548,6 @@ const char horarios_html[] PROGMEM = R"rawliteral(
                     enabled: document.getElementById('c1_ativo_' + i).checked,
                     start: document.getElementById('c1_inicio_' + i).value || '00:00',
                     duration: parseInt(document.getElementById('c1_duracao_' + i).value) || 0
-                });
-
-                payload.channel2.push({
-                    enabled: document.getElementById('c2_ativo_' + i).checked,
-                    start: document.getElementById('c2_inicio_' + i).value || '00:00',
-                    duration: parseInt(document.getElementById('c2_duracao_' + i).value) || 0
                 });
             }
 
