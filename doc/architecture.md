@@ -48,19 +48,22 @@ As configurações persistentes serão separadas em dois arquivos JSON no Little
   "pwdSta": "senhaSuperSecreta",
   "ntpServer": "pool.ntp.br",
   "timeZone": -3,
-  "ntpSyncInterval": 21600
+  "ntpSyncInterval": 21600,
+  "mqttBroker": "broker.hivemq.com",
+  "mqttPort": 1883,
+  "mqttUser": "",
+  "mqttPwd": "",
+  "mqttTopic": "irriga_solo"
 }
 ```
 
-(Nota: ntpSyncInterval define o tempo em segundos entre sincronizações - ex: 21600s = 6 horas).
+(Nota: `ntpSyncInterval` define o tempo em segundos entre sincronizações - ex: 21600s = 6 horas).
 
 **2. `/irrigation.json`**
 
 ```json
 {
-  "allowSimultaneous": false,
-  "channel1": [ { "enabled": true, "start": "06:00", "duration": 10 } ],
-  "channel2": [ { "enabled": false, "start": "18:00", "duration": 15 } ]
+  "channel1": [ { "enabled": true, "start": "06:00", "duration": 10 } ]
 }
 ``` 
 
@@ -73,41 +76,45 @@ Isolamento de domínio. Atualizar horários de irrigação não exige tocar no a
 
 ### Decisão
 Não utilizar bibliotecas de alarmes baseadas em interrupções ou callbacks (como TimeAlarms).
-O agendamento será implementado através de um Super Loop (polling) que compara o horário atual gerado pelo NTPClient com os timestamps ou equivalentes numéricos (ex: minutos desde a meia-noite) das sessões ativas no /irrigation.json.
+O agendamento será implementado através de um Super Loop (polling) que compara o horário atual gerado pelo NTPClient com os timestamps ou equivalentes numéricos (ex: minutos desde a meia-noite) das sessões ativas no `/irrigation.json`.
 
 ### Motivação
 Evitar race conditions com processos assíncronos do ESP8266 (WiFi e WebServer).
-
 Maior previsibilidade de execução.
-
 Facilidade para ignorar "regas perdidas" durante quedas de energia (o loop simplesmente avalia: "o horário atual está dentro de uma janela de rega ativa?").
 
-# ADR-006 - Responsabilidade de Validação de Conflitos
+---
+
+# ADR-006 - Integração do Sensor de Fluxo de Água
+
 ### Decisão
-A validação de conflito de horários (quando allowSimultaneous é falso) será feita obrigatoriamente no Backend (Firmware em C++). O frontend pode ter validações visuais de conveniência, mas o Endpoint HTTP que recebe o POST/PUT do JSON rejeitará cargas úteis (HTTP 400 Bad Request) se houver sobreposição de minutos.
+O monitoramento do fluxo de água utilizará uma rotina de interrupção externa (ISR) associada ao pino do sensor (GPIO14/D5). A ISR incrementará um contador de pulsos global. A cada 1 segundo, o loop principal calculará a vazão instantânea (L/min) baseado na frequência de pulsos e acumulará o volume consumido total em Litros, armazenado em uma variável de ponto flutuante de precisão simples (`float`).
 
 ### Motivação
-A segurança do equipamento (risco de falta de pressão d'água ou sobrecarga elétrica) não pode depender de código rodando no navegador do cliente, que pode ser burlado ou falhar silenciosamente.
+O sensor de fluxo YF-S201B gera pulsos de alta frequência que dependem da vazão de água. O uso de interrupções de hardware garante que nenhum pulso seja perdido durante a execução de outras tarefas (como processamento web ou rede). O cálculo da vazão no loop principal de 1 segundo minimiza o tempo gasto dentro da rotina de interrupção (ISR), mantendo a estabilidade do ESP8266.
+
+---
 
 # ADR-007 - Controle Físico e Sequência de Inicialização
+
 ### Decisão
-Os módulos de relé operam em lógica Active High.
-A sequência de inicialização no setup() deve ser estritamente:
-
-Configurar pinMode para os GPIOs dos relés.
-
-Escrever LOW imediata e explicitamente em todos os canais.
-
-Montar LittleFS.
-
-(Restante do boot: Rede, NTP, Servidor Web).
+O módulo de relé opera em lógica Active High.
+A sequência de inicialização no `setup()` deve ser estritamente:
+1. Configurar `pinMode` para o GPIO do relé.
+2. Escrever `LOW` imediata e explicitamente no pino.
+3. Montar LittleFS.
+4. Inicializar o sensor de fluxo (anexar interrupção).
+5. (Restante do boot: Rede, NTP, Servidor Web, MQTT).
 
 ### Motivação
-Garantir que picos de flutuação de pino durante o boot do ESP8266 não acionem as válvulas de água indevidamente antes que o sistema tenha consciência de seu próprio estado.
+Garantir que picos de flutuação de pino durante o boot do ESP8266 não acionem a válvula de água indevidamente antes que o sistema tenha consciência de seu próprio estado.
+
+---
 
 # ADR-008 - Telemetria e Logs
+
 ### Decisão
-Utilizar a porta Serial nativa do ESP8266 (Serial.print) formatando a saída com níveis de severidade [INFO], [WARN], [ERROR]. Em caso de falha no parser JSON do LittleFS, registrar detalhadamente o nó que falhou.
+Utilizar a porta Serial nativa do ESP8266 (`Serial.print`) formatando a saída com níveis de severidade `[INFO]`, `[WARN]`, `[ERROR]`. Em caso de falha no parser JSON do LittleFS, registrar detalhadamente o nó que falhou.
 
 ### Motivação
 Permitir depuração em bancada (USB) durante o desenvolvimento e diagnósticos rápidos de falha estrutural de arquivos de configuração.
@@ -115,6 +122,7 @@ Permitir depuração em bancada (USB) durante o desenvolvimento e diagnósticos 
 ---
 
 # ADR-009 - Mecanismo de Atualização Remota (OTA)
+
 ### Decisão
 Implementar a atualização remota (OTA - *Over-The-Air*) baseada em interface web local via biblioteca nativa `ESP8266HTTPUpdateServer` mapeada na rota `/update`.
 
@@ -123,3 +131,14 @@ A escolha de um atualizador web local (pull via interface de usuário) ao invés
 1. **Acessibilidade Universal:** O usuário/desenvolvedor pode atualizar o dispositivo estando tanto na rede local do roteador quanto conectado diretamente no Access Point nativo do ESP8266, sem precisar de ferramentas de build complexas instaladas.
 2. **Segurança de Rede e Firewall:** Evita falhas no processo causadas por firewalls do sistema operacional do host bloqueando portas efêmeras de escuta exigidas pelo ArduinoOTA.
 3. **Padrão de Mercado:** Segue o fluxo clássico adotado por roteadores e equipamentos residenciais inteligentes, onde o firmware é atualizado por meio de um arquivo `.bin` na página administrativa do equipamento.
+
+---
+
+# ADR-010 - Protocolo MQTT para Telemetria e Controle Remoto
+
+### Decisão
+Utilizar a biblioteca `PubSubClient` para realizar a conexão MQTT com um broker externo. A conexão será não-bloqueante, tentando restabelecer o link periodicamente (a cada 10 segundos) sem o uso de `delay()`. O dispositivo enviará telemetrias periódicas a cada 5 segundos no formato JSON e receberá comandos para ligar/desligar o relé ou zerar o volume acumulado.
+
+### Motivação
+Integrar o sistema à internet de forma eficiente e leve. O uso do protocolo MQTT permite baixo consumo de banda e uma arquitetura baseada em eventos (publicador/assinante), ideal para o monitoramento e controle em tempo real via internet a partir de aplicativos ou brokers gratuitos de nuvem.
+

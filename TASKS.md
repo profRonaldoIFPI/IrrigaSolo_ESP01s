@@ -66,3 +66,15 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Adicionar seção de solução de erro de porta serial no `Anotacoes.md`
 - [x] Executar comando no terminal para adicionar usuário ao grupo `dialout`
 
+## Etapa 9 — Transição para Canal Único, Sensor de Fluxo e MQTT
+- [x] Atualizar especificações e decisões arquiteturais em `/doc`
+- [ ] Adicionar dependência PubSubClient no `platformio.ini`
+- [ ] Atualizar arquivos de pinos de hardware (`pinosHardware.h`) e estruturas (`estruturas.h`)
+- [ ] Ajustar lógica de persistência JSON (`persistencia.cpp`)
+- [ ] Implementar leitura do sensor de fluxo (`sensorFluxo.h` / `sensorFluxo.cpp`)
+- [ ] Implementar cliente MQTT (`clienteMqtt.h` / `clienteMqtt.cpp`)
+- [ ] Simplificar o agendador (`agendador.cpp`) para canal único
+- [ ] Atualizar templates HTML da interface web e endpoints do servidor web
+- [ ] Integrar no `main.cpp` e testar compilação
+
+
