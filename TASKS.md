@@ -73,7 +73,7 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Ajustar lógica de persistência JSON (`persistencia.cpp`)
 - [x] Implementar leitura do sensor de fluxo (`sensorFluxo.h` / `sensorFluxo.cpp`)
 - [x] Implementar cliente MQTT (`clienteMqtt.h` / `clienteMqtt.cpp`)
-- [ ] Simplificar o agendador (`agendador.cpp`) para canal único
+- [x] Simplificar o agendador (`agendador.cpp`) para canal único
 - [ ] Atualizar templates HTML da interface web e endpoints do servidor web
 - [ ] Integrar no `main.cpp` e testar compilação
 

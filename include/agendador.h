@@ -29,7 +29,7 @@
 void inicializarReles();
 
 /**
- * Avalia todas as sessões de irrigação ativas e aciona/desliga os relés.
+ * Avalia todas as sessões de irrigação ativas e aciona/desliga o relé.
  *
  * Para cada sessão habilitada, calcula se o minuto atual está dentro
  * da janela [início, início + duração). Se sim, liga o relé; se não,
@@ -38,28 +38,11 @@ void inicializarReles();
  * Não acumula regas perdidas: se o boot ocorreu após o horário de
  * início, o sistema não compensa — apenas aguarda o próximo (RF1.3).
  *
- * @param configIrrigacao Configuração completa de irrigação (ambos canais).
+ * @param configIrrigacao Configuração completa de irrigação.
  * @param minutoAtual     Minutos desde meia-noite (0–1439), obtido do NTP.
  */
 void avaliarAgendamentos(const ConfiguracaoIrrigacao &configIrrigacao,
                          int minutoAtual);
-
-/**
- * Valida se existe sobreposição de horários entre Canal 1 e Canal 2.
- *
- * Executada pelo servidor web antes de salvar /irrigation.json (ADR-006).
- * Quando permitirSimultaneidade == false, verifica se alguma sessão
- * habilitada do Canal 1 se sobrepõe (em minutos) com alguma sessão
- * habilitada do Canal 2. Retorna false se houver conflito.
- *
- * A validação obrigatória no backend (firmware) garante que o
- * equipamento esteja protegido mesmo se o frontend falhar (ADR-006).
- *
- * @param configIrrigacao Configuração candidata a ser validada.
- * @return true se não há conflitos (seguro para salvar), false se há
- * sobreposição.
- */
-bool validarConflitos(const ConfiguracaoIrrigacao &configIrrigacao);
 
 /**
  * Aciona ou desliga manualmente um canal de irrigação.
