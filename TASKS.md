@@ -67,12 +67,8 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Executar comando no terminal para adicionar usuário ao grupo `dialout`
 
 ## Etapa 9 — Transição para Canal Único, Sensor de Fluxo e MQTT (Local & Configurável)
-- [x] Atualizar especificações e decisões de arquitetura em `/doc`
-- [x] Atualizar struct `ConfiguracaoRede` em `estruturas.h`
-- [x] Modificar padrões e parsing JSON em `persistencia.cpp`
-- [x] Atualizar lógica de conexão e publicação em `clienteMqtt.cpp`
-- [x] Modificar interface de configuração de rede em `config.html`
-- [x] Ajustar endpoints da API de rede em `servidorWeb.cpp`
-- [x] Compilar e validar a integridade estrutural do firmware
+- [x] Modificar o script de compilação `html2c.py` para injetar variáveis do `.env`
+- [ ] Atualizar a lógica de aplicação de defaults em `persistencia.cpp` usando MAC e macros do `.env`
+- [ ] Compilar e validar a integridade estrutural do firmware
 
 

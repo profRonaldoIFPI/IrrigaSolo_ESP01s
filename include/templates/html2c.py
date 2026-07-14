@@ -15,6 +15,41 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, "include", "templates")
 PARTIALS_DIR = os.path.join(TEMPLATES_DIR, "partials")
 INCLUDE_DIR = os.path.join(BASE_DIR, "include")
 
+# --- Ler e Injetar Variáveis do arquivo .env como macros C++ ---
+env_vars = {}
+env_file_path = os.path.join(BASE_DIR, ".env")
+if os.path.exists(env_file_path):
+    with open(env_file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            parts = line.split("=", 1)
+            if len(parts) == 2:
+                key, val = parts
+                env_vars[key.strip()] = val.strip()
+
+try:
+    from SCons.Script import Import
+    Import("env")
+    cpp_defines = []
+    if "SSID" in env_vars:
+        cpp_defines.append(("ENV_WIFI_SSID", f'\\"{env_vars["SSID"]}\\"'))
+    if "SENHA" in env_vars:
+        cpp_defines.append(("ENV_WIFI_SENHA", f'\\"{env_vars["SENHA"]}\\"'))
+    if "IP" in env_vars:
+        cpp_defines.append(("ENV_MQTT_IP", f'\\"{env_vars["IP"]}\\"'))
+    if "USER" in env_vars:
+        cpp_defines.append(("ENV_MQTT_USER", f'\\"{env_vars["USER"]}\\"'))
+    if "PASS" in env_vars:
+        cpp_defines.append(("ENV_MQTT_PASS", f'\\"{env_vars["PASS"]}\\"'))
+    
+    if cpp_defines:
+        env.Append(CPPDEFINES=cpp_defines)
+        print(f"[ENV_LOAD] Injetadas macros C++: {cpp_defines}")
+except Exception as e:
+    pass
+
 # Carrega os templates parciais se existirem
 head_partial = ""
 footer_partial = ""
