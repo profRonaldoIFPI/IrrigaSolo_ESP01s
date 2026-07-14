@@ -12,9 +12,7 @@ static ConfiguracaoRede configRedeLocal;
 static unsigned long ultimaTentativaReconexaoMs = 0;
 static const unsigned long INTERVALO_RECONEXAO_MQTT_MS = 10000;
 
-// Buffers para os tópicos de comunicação
-static char topicoStatus[64];
-static char topicoComando[64];
+// A configuração MQTT agora lê os tópicos e Client ID dinamicamente do LittleFS
 
 /**
  * Função de callback interna. Chamada pela PubSubClient quando chega
@@ -44,10 +42,6 @@ static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
 
 void inicializarMqtt(const ConfiguracaoRede& config) {
     configRedeLocal = config;
-    
-    // Construir os tópicos utilizando o prefixo (RF5.1, RF5.2)
-    snprintf(topicoStatus, sizeof(topicoStatus), "%s/status", configRedeLocal.mqttTopicPrefix);
-    snprintf(topicoComando, sizeof(topicoComando), "%s/comando", configRedeLocal.mqttTopicPrefix);
 
     mqttClient.setServer(configRedeLocal.mqttBroker, configRedeLocal.mqttPort);
     mqttClient.setCallback(callbackMqtt);
@@ -67,8 +61,8 @@ static bool tentarConectarMqtt() {
     Serial.print(F("[MQTT] Tentando conectar ao broker: "));
     Serial.println(configRedeLocal.mqttBroker);
 
-    // Para Thinger.io, o Client ID deve ser exatamente o Device ID (armazenado em mqttTopicPrefix)
-    const char* clientId = configRedeLocal.mqttTopicPrefix;
+    // Usar o Client ID configurado via web (essencial para rodar múltiplos ESPs)
+    const char* clientId = configRedeLocal.mqttClientId;
 
     bool conectado = false;
     if (strlen(configRedeLocal.mqttUser) > 0) {
@@ -79,8 +73,10 @@ static bool tentarConectarMqtt() {
 
     if (conectado) {
         Serial.println(F("[MQTT] Conectado ao Broker!"));
-        // Increver no tópico de comandos (RF5.2)
-        mqttClient.subscribe(topicoComando);
+        // Increver no tópico de comandos customizado (RF5.2)
+        mqttClient.subscribe(configRedeLocal.mqttSubscribeTopic);
+        Serial.print(F("[MQTT] Inscrito no tópico: "));
+        Serial.println(configRedeLocal.mqttSubscribeTopic);
         return true;
     } else {
         Serial.print(F("[MQTT] Falha na conexao. Codigo de erro="));
@@ -115,7 +111,7 @@ void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL)
              vazaoLMin,
              volumeTotalL);
 
-    bool statusEnvio = mqttClient.publish(topicoStatus, payloadJson);
+    bool statusEnvio = mqttClient.publish(configRedeLocal.mqttPublishTopic, payloadJson);
     if (statusEnvio) {
         Serial.print(F("[MQTT] Telemetria publicada: "));
         Serial.println(payloadJson);
