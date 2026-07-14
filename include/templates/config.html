@@ -173,6 +173,11 @@
                 <label for="campo_mqtt_sub_topic">Tópico de Assinatura (Comando)</label>
                 <input type="text" id="campo_mqtt_sub_topic" placeholder="irriga_solo/1/comando" maxlength="64">
             </div>
+            <div class="form-group">
+                <label for="campo_mqtt_interval">Intervalo de Publicação (segundos)</label>
+                <input type="number" id="campo_mqtt_interval" value="10" min="1" max="3600">
+                <div class="form-hint">Padrão: 10 segundos. Mínimo: 1s.</div>
+            </div>
         </div>
 
         <!-- Atualização de Firmware (OTA) -->
@@ -223,6 +228,7 @@
                     document.getElementById('campo_mqtt_client_id').value = dados.mqttClientId || '';
                     document.getElementById('campo_mqtt_pub_topic').value = dados.mqttPubTopic || '';
                     document.getElementById('campo_mqtt_sub_topic').value = dados.mqttSubTopic || '';
+                    document.getElementById('campo_mqtt_interval').value = dados.mqttInterval || 10;
                 })
                 .catch(function (erro) { console.error('Erro ao carregar config de rede:', erro); });
         }
@@ -248,7 +254,8 @@
                 mqttUser: document.getElementById('campo_mqtt_user').value,
                 mqttClientId: document.getElementById('campo_mqtt_client_id').value,
                 mqttPubTopic: document.getElementById('campo_mqtt_pub_topic').value,
-                mqttSubTopic: document.getElementById('campo_mqtt_sub_topic').value
+                mqttSubTopic: document.getElementById('campo_mqtt_sub_topic').value,
+                mqttInterval: parseInt(document.getElementById('campo_mqtt_interval').value) || 10
             };
 
             // Incluir senhas apenas se preenchidas
