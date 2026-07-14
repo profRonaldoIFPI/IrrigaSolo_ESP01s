@@ -68,7 +68,7 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 
 ## Etapa 9 — Transição para Canal Único, Sensor de Fluxo e MQTT (Local & Configurável)
 - [x] Modificar o script de compilação `html2c.py` para injetar variáveis do `.env`
-- [ ] Atualizar a lógica de aplicação de defaults em `persistencia.cpp` usando MAC e macros do `.env`
+- [x] Atualizar a lógica de aplicação de defaults em `persistencia.cpp` usando MAC e macros do `.env`
 - [ ] Compilar e validar a integridade estrutural do firmware
 
 

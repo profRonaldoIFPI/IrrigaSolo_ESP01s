@@ -15,6 +15,28 @@
 #include "persistencia.h"
 #include <LittleFS.h>
 #include <ArduinoJson.h>
+#include <ESP8266WiFi.h>
+
+// Fallbacks de segurança para macros injetadas pelo script SCons do arquivo .env
+#ifndef ENV_WIFI_SSID
+#define ENV_WIFI_SSID "IoTnet"
+#endif
+
+#ifndef ENV_WIFI_SENHA
+#define ENV_WIFI_SENHA "Casa20@iot_devices"
+#endif
+
+#ifndef ENV_MQTT_IP
+#define ENV_MQTT_IP "192.168.1.49"
+#endif
+
+#ifndef ENV_MQTT_USER
+#define ENV_MQTT_USER "iotdevices"
+#endif
+
+#ifndef ENV_MQTT_PASS
+#define ENV_MQTT_PASS "iotCasa20"
+#endif
 
 // ---------------------------------------------------------------------------
 // Caminhos dos arquivos no LittleFS (ADR-004)
@@ -35,22 +57,28 @@ static void aplicarDefaultsRede(ConfiguracaoRede& configRede) {
     strlcpy(configRede.ssidAp,       SSID_AP_PADRAO,       sizeof(configRede.ssidAp));
     strlcpy(configRede.senhaAp,      SENHA_AP_PADRAO,      sizeof(configRede.senhaAp));
     
-    // Wi-Fi Local (IoTnet)
-    strlcpy(configRede.ssidSta,      "IoTnet",             sizeof(configRede.ssidSta));
-    strlcpy(configRede.senhaSta,     "Casa20@iot_devices", sizeof(configRede.senhaSta));
+    // Wi-Fi Local (Injetado dinamicamente via .env em tempo de compilação)
+    strlcpy(configRede.ssidSta,      ENV_WIFI_SSID,        sizeof(configRede.ssidSta));
+    strlcpy(configRede.senhaSta,     ENV_WIFI_SENHA,       sizeof(configRede.senhaSta));
     
     strlcpy(configRede.servidorNtp,   SERVIDOR_NTP_PADRAO,  sizeof(configRede.servidorNtp));
     configRede.fusoHorario       = FUSO_HORARIO_PADRAO;
     configRede.intervaloSyncNtp  = INTERVALO_NTP_PADRAO;
 
-    // Padrões MQTT para Broker Mosquitto local
-    strlcpy(configRede.mqttBroker, "192.168.1.49", sizeof(configRede.mqttBroker));
+    // Padrões MQTT para Broker Mosquitto local (Injetado dinamicamente via .env)
+    strlcpy(configRede.mqttBroker,   ENV_MQTT_IP,          sizeof(configRede.mqttBroker));
     configRede.mqttPort = 1883;
-    strlcpy(configRede.mqttUser, "iotdevices", sizeof(configRede.mqttUser));
-    strlcpy(configRede.mqttPassword, "iotCasa20", sizeof(configRede.mqttPassword));
-    strlcpy(configRede.mqttClientId, "irrigasolo_1", sizeof(configRede.mqttClientId));
-    strlcpy(configRede.mqttPublishTopic, "irriga_solo/1/status", sizeof(configRede.mqttPublishTopic));
-    strlcpy(configRede.mqttSubscribeTopic, "irriga_solo/1/comando", sizeof(configRede.mqttSubscribeTopic));
+    strlcpy(configRede.mqttUser,     ENV_MQTT_USER,        sizeof(configRede.mqttUser));
+    strlcpy(configRede.mqttPassword, ENV_MQTT_PASS,        sizeof(configRede.mqttPassword));
+    
+    // Obter MAC Address físico para criar identificações únicas de tópicos e Client ID
+    String mac = WiFi.macAddress();
+    mac.replace(":", "");
+    mac.toLowerCase();
+
+    snprintf(configRede.mqttClientId, sizeof(configRede.mqttClientId), "irrigasolo_%s", mac.c_str());
+    snprintf(configRede.mqttPublishTopic, sizeof(configRede.mqttPublishTopic), "irriga_solo/%s/status", mac.c_str());
+    snprintf(configRede.mqttSubscribeTopic, sizeof(configRede.mqttSubscribeTopic), "irriga_solo/%s/comando", mac.c_str());
 }
 
 /**
