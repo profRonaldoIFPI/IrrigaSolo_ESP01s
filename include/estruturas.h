@@ -61,6 +61,7 @@ struct ConfiguracaoRede {
     char     mqttClientId[33];    // ID de Cliente único no Broker
     char     mqttPublishTopic[65]; // Tópico para publicação de telemetria
     char     mqttSubscribeTopic[65]; // Tópico para inscrição de comandos
+    uint16_t mqttInterval;        // Intervalo de publicação de telemetria em segundos
 };
 
 // ---------------------------------------------------------------------------
