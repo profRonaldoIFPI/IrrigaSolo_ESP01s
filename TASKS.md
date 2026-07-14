@@ -73,4 +73,4 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Substituir o polling estático pelo configurável no `main.cpp`
 - [x] Adicionar campo no formulário HTML de `config.html`
 - [x] Ajustar endpoints da API de rede em `servidorWeb.cpp`
-- [ ] Compilar e validar a integridade estrutural do firmware
+- [x] Compilar e validar a integridade estrutural do firmware
