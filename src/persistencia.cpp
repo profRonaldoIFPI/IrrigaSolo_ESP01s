@@ -34,18 +34,23 @@ static const char CAMINHO_IRRIGATION[] = "/irrigation.json";
 static void aplicarDefaultsRede(ConfiguracaoRede& configRede) {
     strlcpy(configRede.ssidAp,       SSID_AP_PADRAO,       sizeof(configRede.ssidAp));
     strlcpy(configRede.senhaAp,      SENHA_AP_PADRAO,      sizeof(configRede.senhaAp));
-    configRede.ssidSta[0]  = '\0'; // Sem rede STA configurada
-    configRede.senhaSta[0] = '\0';
+    
+    // Wi-Fi Local (IoTnet)
+    strlcpy(configRede.ssidSta,      "IoTnet",             sizeof(configRede.ssidSta));
+    strlcpy(configRede.senhaSta,     "Casa20@iot_devices", sizeof(configRede.senhaSta));
+    
     strlcpy(configRede.servidorNtp,   SERVIDOR_NTP_PADRAO,  sizeof(configRede.servidorNtp));
     configRede.fusoHorario       = FUSO_HORARIO_PADRAO;
     configRede.intervaloSyncNtp  = INTERVALO_NTP_PADRAO;
 
-    // Padrões MQTT para Thinger.io
-    strlcpy(configRede.mqttBroker, "backend.thinger.io", sizeof(configRede.mqttBroker));
+    // Padrões MQTT para Broker Mosquitto local
+    strlcpy(configRede.mqttBroker, "192.168.1.49", sizeof(configRede.mqttBroker));
     configRede.mqttPort = 1883;
-    strlcpy(configRede.mqttUser, "irrigasolo", sizeof(configRede.mqttUser)); // Valor sugerido como padrão
-    strlcpy(configRede.mqttPassword, "P4Bv6g!XHvH9L3", sizeof(configRede.mqttPassword));
-    strlcpy(configRede.mqttTopicPrefix, "irrigasolo", sizeof(configRede.mqttTopicPrefix)); // Device ID como prefixo e Client ID
+    strlcpy(configRede.mqttUser, "iotdevices", sizeof(configRede.mqttUser));
+    strlcpy(configRede.mqttPassword, "iotCasa20", sizeof(configRede.mqttPassword));
+    strlcpy(configRede.mqttClientId, "irrigasolo_1", sizeof(configRede.mqttClientId));
+    strlcpy(configRede.mqttPublishTopic, "irriga_solo/1/status", sizeof(configRede.mqttPublishTopic));
+    strlcpy(configRede.mqttSubscribeTopic, "irriga_solo/1/comando", sizeof(configRede.mqttSubscribeTopic));
 }
 
 /**
@@ -123,18 +128,24 @@ bool carregarConfiguracaoRede(ConfiguracaoRede& configRede) {
 
     // Extrair parâmetros MQTT
     strlcpy(configRede.mqttBroker,
-            documento["mqttBroker"] | "broker.hivemq.com",
+            documento["mqttBroker"] | "192.168.1.49",
             sizeof(configRede.mqttBroker));
     configRede.mqttPort = documento["mqttPort"] | 1883;
     strlcpy(configRede.mqttUser,
-            documento["mqttUser"] | "",
+            documento["mqttUser"] | "iotdevices",
             sizeof(configRede.mqttUser));
     strlcpy(configRede.mqttPassword,
-            documento["mqttPwd"] | "",
+            documento["mqttPwd"] | "iotCasa20",
             sizeof(configRede.mqttPassword));
-    strlcpy(configRede.mqttTopicPrefix,
-            documento["mqttTopic"] | "irriga_solo",
-            sizeof(configRede.mqttTopicPrefix));
+    strlcpy(configRede.mqttClientId,
+            documento["mqttClientId"] | "irrigasolo_1",
+            sizeof(configRede.mqttClientId));
+    strlcpy(configRede.mqttPublishTopic,
+            documento["mqttPubTopic"] | "irriga_solo/1/status",
+            sizeof(configRede.mqttPublishTopic));
+    strlcpy(configRede.mqttSubscribeTopic,
+            documento["mqttSubTopic"] | "irriga_solo/1/comando",
+            sizeof(configRede.mqttSubscribeTopic));
 
     Serial.println(F("[INFO] /network.json carregado com sucesso."));
     return true;
@@ -156,7 +167,9 @@ bool salvarConfiguracaoRede(const ConfiguracaoRede& configRede) {
     documento["mqttPort"]        = configRede.mqttPort;
     documento["mqttUser"]        = configRede.mqttUser;
     documento["mqttPwd"]         = configRede.mqttPassword;
-    documento["mqttTopic"]       = configRede.mqttTopicPrefix;
+    documento["mqttClientId"]    = configRede.mqttClientId;
+    documento["mqttPubTopic"]    = configRede.mqttPublishTopic;
+    documento["mqttSubTopic"]    = configRede.mqttSubscribeTopic;
 
     File arquivo = LittleFS.open(CAMINHO_NETWORK, "w");
     if (!arquivo) {
