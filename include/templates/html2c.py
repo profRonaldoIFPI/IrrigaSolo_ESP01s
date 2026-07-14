@@ -27,7 +27,12 @@ if os.path.exists(env_file_path):
             parts = line.split("=", 1)
             if len(parts) == 2:
                 key, val = parts
-                env_vars[key.strip()] = val.strip()
+                # Remover comentários inline e espaços
+                val = val.split("#")[0].strip()
+                # Remover aspas simples ou duplas se existirem nas pontas do valor
+                if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                    val = val[1:-1]
+                env_vars[key.strip()] = val
 
 try:
     from SCons.Script import Import
@@ -35,14 +40,14 @@ try:
     cpp_defines = []
     if "SSID" in env_vars:
         cpp_defines.append(("ENV_WIFI_SSID", f'\\"{env_vars["SSID"]}\\"'))
-    if "SENHA" in env_vars:
-        cpp_defines.append(("ENV_WIFI_SENHA", f'\\"{env_vars["SENHA"]}\\"'))
-    if "IP" in env_vars:
-        cpp_defines.append(("ENV_MQTT_IP", f'\\"{env_vars["IP"]}\\"'))
-    if "USER" in env_vars:
-        cpp_defines.append(("ENV_MQTT_USER", f'\\"{env_vars["USER"]}\\"'))
-    if "PASS" in env_vars:
-        cpp_defines.append(("ENV_MQTT_PASS", f'\\"{env_vars["PASS"]}\\"'))
+    if "WIFI_PASS" in env_vars:
+        cpp_defines.append(("ENV_WIFI_SENHA", f'\\"{env_vars["WIFI_PASS"]}\\"'))
+    if "BROKER_IP" in env_vars:
+        cpp_defines.append(("ENV_MQTT_IP", f'\\"{env_vars["BROKER_IP"]}\\"'))
+    if "BROKER_USER" in env_vars:
+        cpp_defines.append(("ENV_MQTT_USER", f'\\"{env_vars["BROKER_USER"]}\\"'))
+    if "BROKER_PASS" in env_vars:
+        cpp_defines.append(("ENV_MQTT_PASS", f'\\"{env_vars["BROKER_PASS"]}\\"'))
     
     if cpp_defines:
         env.Append(CPPDEFINES=cpp_defines)
