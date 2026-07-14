@@ -79,6 +79,7 @@ static void aplicarDefaultsRede(ConfiguracaoRede& configRede) {
     snprintf(configRede.mqttClientId, sizeof(configRede.mqttClientId), "irrigasolo_%s", mac.c_str());
     snprintf(configRede.mqttPublishTopic, sizeof(configRede.mqttPublishTopic), "irriga_solo/%s/status", mac.c_str());
     snprintf(configRede.mqttSubscribeTopic, sizeof(configRede.mqttSubscribeTopic), "irriga_solo/%s/comando", mac.c_str());
+    configRede.mqttInterval = 10;
 }
 
 /**
@@ -174,6 +175,7 @@ bool carregarConfiguracaoRede(ConfiguracaoRede& configRede) {
     strlcpy(configRede.mqttSubscribeTopic,
             documento["mqttSubTopic"] | "irriga_solo/1/comando",
             sizeof(configRede.mqttSubscribeTopic));
+    configRede.mqttInterval = documento["mqttInterval"] | 10;
 
     Serial.println(F("[INFO] /network.json carregado com sucesso."));
     return true;
@@ -198,6 +200,7 @@ bool salvarConfiguracaoRede(const ConfiguracaoRede& configRede) {
     documento["mqttClientId"]    = configRede.mqttClientId;
     documento["mqttPubTopic"]    = configRede.mqttPublishTopic;
     documento["mqttSubTopic"]    = configRede.mqttSubscribeTopic;
+    documento["mqttInterval"]    = configRede.mqttInterval;
 
     File arquivo = LittleFS.open(CAMINHO_NETWORK, "w");
     if (!arquivo) {
