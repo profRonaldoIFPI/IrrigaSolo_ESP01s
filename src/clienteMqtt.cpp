@@ -98,18 +98,20 @@ void processarMqtt() {
     }
 }
 
-void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL) {
+void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL, const char* ultimaIrrigacao, const char* proximaIrrigacao) {
     if (!mqttClient.connected()) {
         return;
     }
 
     // Gerar JSON usando buffer estático em vez de String (evita fragmentação do Heap, conforme embedded-constraints.md)
-    char payloadJson[128];
+    char payloadJson[256];
     snprintf(payloadJson, sizeof(payloadJson),
-             "{\"valvula\":\"%s\",\"vazao\":%.2f,\"volume\":%.2f}",
+             "{\"valvula\":\"%s\",\"vazao\":%.2f,\"volume\":%.2f,\"ultima_irrigacao\":\"%s\",\"proxima_irrigacao\":\"%s\"}",
              valvulaLigada ? "LIGADA" : "DESLIGADA",
              vazaoLMin,
-             volumeTotalL);
+             volumeTotalL,
+             ultimaIrrigacao,
+             proximaIrrigacao);
 
     bool statusEnvio = mqttClient.publish(configRedeLocal.mqttPublishTopic, payloadJson);
     if (statusEnvio) {

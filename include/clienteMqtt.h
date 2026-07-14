@@ -33,8 +33,10 @@ void processarMqtt();
  * @param valvulaLigada true se a válvula está ativa (relé HIGH), false caso contrário.
  * @param vazaoLMin Vazão instantânea medida em litros/minuto.
  * @param volumeTotalL Volume acumulado de água em litros.
+ * @param ultimaIrrigacao Horário de início da última rega ("HH:MM").
+ * @param proximaIrrigacao Horário de início da próxima rega ("HH:MM").
  */
-void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL);
+void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL, const char* ultimaIrrigacao, const char* proximaIrrigacao);
 
 /**
  * Retorna se o cliente está conectado ao Broker MQTT.

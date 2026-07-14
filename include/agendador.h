@@ -65,3 +65,23 @@ void controleManual(uint8_t canal, bool estado);
  * @return true se o relé está ligado (HIGH), false se desligado (LOW).
  */
 bool obterEstadoRele(uint8_t canal);
+
+/**
+ * Obtém o horário de início da próxima irrigação programada.
+ *
+ * @param config Configuração completa de irrigação.
+ * @param minutoAtual Minutos desde meia-noite (NTP).
+ * @param buffer Buffer de saída para o horário "HH:MM".
+ * @param maxLen Tamanho máximo do buffer de saída.
+ */
+void obterProximaIrrigacao(const ConfiguracaoIrrigacao &config, int minutoAtual, char *buffer, size_t maxLen);
+
+/**
+ * Obtém o horário de início da última irrigação programada.
+ *
+ * @param config Configuração completa de irrigação.
+ * @param minutoAtual Minutos desde meia-noite (NTP).
+ * @param buffer Buffer de saída para o horário "HH:MM".
+ * @param maxLen Tamanho máximo do buffer de saída.
+ */
+void obterUltimaIrrigacao(const ConfiguracaoIrrigacao &config, int minutoAtual, char *buffer, size_t maxLen);

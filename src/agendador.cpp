@@ -72,6 +72,11 @@ void inicializarReles() {
     digitalWrite(PINO_RELE_CANAL_1, LOW);
 }
 
+// Variáveis internas para controle de override manual e detecção de transições
+static bool ultimoEstadoAgendado = false;
+static bool manualOverrideActive = false;
+static bool manualOverrideState  = false;
+
 void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minutoAtual) {
     // Avaliar sessões do Canal 1
     bool canal1DeveEstarLigado = false;
@@ -92,7 +97,17 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minut
             break; // Basta uma sessão ativa para ligar o canal
         }
     }
-    digitalWrite(PINO_RELE_CANAL_1, canal1DeveEstarLigado ? HIGH : LOW);
+
+    // Se houve transição no estado agendado, o override manual expira (retorna ao automático)
+    if (canal1DeveEstarLigado != ultimoEstadoAgendado) {
+        manualOverrideActive = false;
+        ultimoEstadoAgendado = canal1DeveEstarLigado;
+        Serial.println(F("[INFO] Transição de agendamento detectada. Retornando ao modo automático."));
+    }
+
+    // Grava no pino físico o estado de override ou o agendado
+    bool estadoFinal = manualOverrideActive ? manualOverrideState : canal1DeveEstarLigado;
+    digitalWrite(PINO_RELE_CANAL_1, estadoFinal ? HIGH : LOW);
 }
 
 void controleManual(uint8_t canal, bool estado) {
@@ -103,9 +118,13 @@ void controleManual(uint8_t canal, bool estado) {
         return;
     }
 
+    // Ativar o override manual e registrar o estado desejado
+    manualOverrideActive = true;
+    manualOverrideState  = estado;
+
     digitalWrite(pino, estado ? HIGH : LOW);
 
-    Serial.print(F("[INFO] Controle manual — Canal "));
+    Serial.print(F("[INFO] Override manual ativado — Canal "));
     Serial.print(canal);
     Serial.println(estado ? F(": LIGADO") : F(": DESLIGADO"));
 }
@@ -116,4 +135,64 @@ bool obterEstadoRele(uint8_t canal) {
         return false;
     }
     return digitalRead(pino) == HIGH;
+}
+
+void obterProximaIrrigacao(const ConfiguracaoIrrigacao &config, int minutoAtual, char *buffer, size_t maxLen) {
+    int menorDiff = 9999;
+    const SessaoIrrigacao* proxima = nullptr;
+
+    for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
+        const SessaoIrrigacao& sessao = config.canal1[i];
+        if (!sessao.habilitada || sessao.duracao == 0) continue;
+
+        int minutosInicio = converterHorarioParaMinutos(sessao.inicio);
+        if (minutosInicio < 0) continue;
+
+        int diff = minutosInicio - minutoAtual;
+        if (diff <= 0) {
+            // Se já passou ou coincide com o minuto atual, o próximo ciclo será amanhã (+1 dia em minutos)
+            diff += 1440;
+        }
+
+        if (diff < menorDiff) {
+            menorDiff = diff;
+            proxima = &sessao;
+        }
+    }
+
+    if (proxima != nullptr) {
+        strlcpy(buffer, proxima->inicio, maxLen);
+    } else {
+        strlcpy(buffer, "--:--", maxLen);
+    }
+}
+
+void obterUltimaIrrigacao(const ConfiguracaoIrrigacao &config, int minutoAtual, char *buffer, size_t maxLen) {
+    int menorDiff = 9999;
+    const SessaoIrrigacao* ultima = nullptr;
+
+    for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
+        const SessaoIrrigacao& sessao = config.canal1[i];
+        if (!sessao.habilitada || sessao.duracao == 0) continue;
+
+        int minutosInicio = converterHorarioParaMinutos(sessao.inicio);
+        if (minutosInicio < 0) continue;
+
+        int diff = minutoAtual - minutosInicio;
+        if (diff < 0) {
+            // Se o horário de início é maior que o atual, a última execução ocorreu ontem (+1 dia em minutos)
+            diff += 1440;
+        }
+
+        if (diff < menorDiff) {
+            menorDiff = diff;
+            ultima = &sessao;
+        }
+    }
+
+    if (ultima != nullptr) {
+        strlcpy(buffer, ultima->inicio, maxLen);
+    } else {
+        strlcpy(buffer, "--:--", maxLen);
+    }
 }
