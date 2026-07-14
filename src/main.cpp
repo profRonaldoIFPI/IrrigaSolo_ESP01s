@@ -150,8 +150,8 @@ void loop() {
         }
     }
 
-    // Publicar telemetria MQTT a cada 5 segundos (RF5.1)
-    if (agora - ultimaPublicacaoMqttMs >= 5000) {
+    // Publicar telemetria MQTT com intervalo configurável (RF5.1)
+    if (agora - ultimaPublicacaoMqttMs >= (configRede.mqttInterval * 1000UL)) {
         ultimaPublicacaoMqttMs = agora;
         publicarTelemetria(obterEstadoRele(1), obterVazaoLMin(), obterVolumeTotalL());
     }

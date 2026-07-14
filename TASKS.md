@@ -70,7 +70,7 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Atualizar especificações e decisões de arquitetura em `/doc`
 - [x] Adicionar campo `mqttInterval` em `estruturas.h`
 - [x] Atualizar parsing JSON em `persistencia.cpp`
-- [ ] Substituir o polling estático pelo configurável no `main.cpp`
+- [x] Substituir o polling estático pelo configurável no `main.cpp`
 - [ ] Adicionar campo no formulário HTML de `config.html`
 - [ ] Ajustar endpoints da API de rede em `servidorWeb.cpp`
 - [ ] Compilar e validar a integridade estrutural do firmware
