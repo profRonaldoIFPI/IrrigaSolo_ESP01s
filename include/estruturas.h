@@ -54,11 +54,13 @@ struct ConfiguracaoRede {
     uint32_t intervaloSyncNtp;   // Intervalo de sincronização em segundos
 
     // Parâmetros MQTT (RF2.2)
-    char     mqttBroker[65];     // Servidor do Broker MQTT
-    uint16_t mqttPort;           // Porta do Broker MQTT
-    char     mqttUser[33];       // Usuário MQTT (opcional)
-    char     mqttPassword[65];   // Senha MQTT (opcional)
-    char     mqttTopicPrefix[33]; // Prefixo dos tópicos (ex: "irriga_solo")
+    char     mqttBroker[65];      // Servidor do Broker MQTT
+    uint16_t mqttPort;            // Porta do Broker MQTT
+    char     mqttUser[33];        // Usuário MQTT (opcional)
+    char     mqttPassword[65];    // Senha MQTT (opcional)
+    char     mqttClientId[33];    // ID de Cliente único no Broker
+    char     mqttPublishTopic[65]; // Tópico para publicação de telemetria
+    char     mqttSubscribeTopic[65]; // Tópico para inscrição de comandos
 };
 
 // ---------------------------------------------------------------------------

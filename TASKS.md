@@ -68,7 +68,7 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 
 ## Etapa 9 — Transição para Canal Único, Sensor de Fluxo e MQTT (Local & Configurável)
 - [x] Atualizar especificações e decisões de arquitetura em `/doc`
-- [ ] Atualizar struct `ConfiguracaoRede` em `estruturas.h`
+- [x] Atualizar struct `ConfiguracaoRede` em `estruturas.h`
 - [ ] Modificar padrões e parsing JSON em `persistencia.cpp`
 - [ ] Atualizar lógica de conexão e publicação em `clienteMqtt.cpp`
 - [ ] Modificar interface de configuração de rede em `config.html`
