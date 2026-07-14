@@ -55,7 +55,8 @@ As configurações persistentes serão separadas em dois arquivos JSON no Little
   "mqttPwd": "iotCasa20",
   "mqttClientId": "irrigasolo_1",
   "mqttPubTopic": "irriga_solo/1/status",
-  "mqttSubTopic": "irriga_solo/1/comando"
+  "mqttSubTopic": "irriga_solo/1/comando",
+  "mqttInterval": 10
 }
 ```
 

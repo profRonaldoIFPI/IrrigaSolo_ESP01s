@@ -23,7 +23,7 @@ O sistema deve permitir o agendamento de sessões de irrigação para o canal ú
 ### RF2 - Gerenciamento de Rede e Configuração Inicial
 O dispositivo deve gerenciar sua conexão Wi-Fi de forma autônoma.
 * **RF2.1:** Na ausência de rede conhecida, opera em modo Access Point (SSID padrão: `IrrigaSolo`, Senha: `admin123`) e exibe um Portal Cativo para configuração.
-* **RF2.2:** A interface inicial deve coletar: SSID e Senha da rede local, URL do servidor NTP (padrão `pool.ntp.br`), Fuso Horário, Intervalo de Sincronização e os parâmetros de conexão MQTT (Broker, Porta, Usuário, Senha, Client ID, Tópico de Publicação e Tópico de Assinatura).
+* **RF2.2:** A interface inicial deve coletar: SSID e Senha da rede local, URL do servidor NTP (padrão `pool.ntp.br`), Fuso Horário, Intervalo de Sincronização e os parâmetros de conexão MQTT (Broker, Porta, Usuário, Senha, Client ID, Tópico de Publicação, Tópico de Assinatura e Intervalo de Publicação).
 * **RF2.3:** Em caso de perda de conexão STA (rede local indisponível), o sistema deve acionar fallback para o modo AP, permitindo nova configuração sem interromper os agendamentos já carregados.
 
 ### RF3 - Medição de Fluxo de Água
@@ -36,11 +36,11 @@ O sistema deve integrar o sensor de fluxo YF-S201B para monitorar o consumo híd
 A interface deve ser acessível via navegador na rede local.
 * **RF4.1:** **Painel Principal:** Exibe status do Wi-Fi, conexão MQTT, hora atual do sistema, estado da válvula e medições em tempo real do sensor de fluxo (vazão e volume total). Permite acionamento manual (Ligar/Desligar) que não interfere na programação automática.
 * **RF4.2:** **Painel de Horários:** Interface para cadastrar, editar, habilitar ou desabilitar as 6 sessões do canal de irrigação.
-* **RF4.3:** **Painel de Configuração:** Interface para alterar credenciais de rede, NTP e as configurações do Broker MQTT (incluindo Client ID e tópicos).
+* **RF4.3:** **Painel de Configuração:** Interface para alterar credenciais de rede, NTP e as configurações do Broker MQTT (incluindo Client ID, tópicos e intervalo de publicação).
 
 ### RF5 - Comunicação MQTT
 O sistema deve permitir monitoramento e controle através de um broker local ou na internet utilizando o protocolo MQTT.
-* **RF5.1:** **Publicação de Telemetria:** O dispositivo deve publicar periodicamente (ex: a cada 5 segundos) o estado atual no tópico de publicação configurado via web no formato JSON:
+* **RF5.1:** **Publicação de Telemetria:** O dispositivo deve publicar periodicamente, com intervalo configurável via web (padrão: 10 segundos, mínimo de 1s), o estado atual no tópico de publicação configurado via web no formato JSON:
   `{"valvula": "LIGADA"|"DESLIGADA", "vazao": 0.0, "volume": 0.0}`
 * **RF5.2:** **Recepção de Comandos:** O dispositivo deve se inscrever no tópico de assinatura configurado via web e aceitar comandos para ligar/desligar a válvula manualmente (ex: payload `LIGAR` ou `DESLIGAR`) e zerar o volume acumulado (ex: payload `ZERAR`).
 
