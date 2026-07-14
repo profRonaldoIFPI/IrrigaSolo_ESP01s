@@ -231,6 +231,7 @@ static void handleApiGetNetwork() {
     documento["mqttClientId"]    = ptrConfigRede->mqttClientId;
     documento["mqttPubTopic"]    = ptrConfigRede->mqttPublishTopic;
     documento["mqttSubTopic"]    = ptrConfigRede->mqttSubscribeTopic;
+    documento["mqttInterval"]    = ptrConfigRede->mqttInterval;
 
     char buffer[384];
     serializeJson(documento, buffer, sizeof(buffer));
@@ -302,6 +303,9 @@ static void handleApiPostNetwork() {
     }
     if (documento["mqttSubTopic"].is<const char*>()) {
         strlcpy(ptrConfigRede->mqttSubscribeTopic, documento["mqttSubTopic"], sizeof(ptrConfigRede->mqttSubscribeTopic));
+    }
+    if (documento["mqttInterval"].is<int>()) {
+        ptrConfigRede->mqttInterval = documento["mqttInterval"];
     }
 
     if (!salvarConfiguracaoRede(*ptrConfigRede)) {
