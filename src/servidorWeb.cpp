@@ -228,7 +228,9 @@ static void handleApiGetNetwork() {
     documento["mqttBroker"]      = ptrConfigRede->mqttBroker;
     documento["mqttPort"]        = ptrConfigRede->mqttPort;
     documento["mqttUser"]        = ptrConfigRede->mqttUser;
-    documento["mqttTopic"]       = ptrConfigRede->mqttTopicPrefix;
+    documento["mqttClientId"]    = ptrConfigRede->mqttClientId;
+    documento["mqttPubTopic"]    = ptrConfigRede->mqttPublishTopic;
+    documento["mqttSubTopic"]    = ptrConfigRede->mqttSubscribeTopic;
 
     char buffer[384];
     serializeJson(documento, buffer, sizeof(buffer));
@@ -292,8 +294,14 @@ static void handleApiPostNetwork() {
     if (documento["mqttPwd"].is<const char*>()) {
         strlcpy(ptrConfigRede->mqttPassword, documento["mqttPwd"], sizeof(ptrConfigRede->mqttPassword));
     }
-    if (documento["mqttTopic"].is<const char*>()) {
-        strlcpy(ptrConfigRede->mqttTopicPrefix, documento["mqttTopic"], sizeof(ptrConfigRede->mqttTopicPrefix));
+    if (documento["mqttClientId"].is<const char*>()) {
+        strlcpy(ptrConfigRede->mqttClientId, documento["mqttClientId"], sizeof(ptrConfigRede->mqttClientId));
+    }
+    if (documento["mqttPubTopic"].is<const char*>()) {
+        strlcpy(ptrConfigRede->mqttPublishTopic, documento["mqttPubTopic"], sizeof(ptrConfigRede->mqttPublishTopic));
+    }
+    if (documento["mqttSubTopic"].is<const char*>()) {
+        strlcpy(ptrConfigRede->mqttSubscribeTopic, documento["mqttSubTopic"], sizeof(ptrConfigRede->mqttSubscribeTopic));
     }
 
     if (!salvarConfiguracaoRede(*ptrConfigRede)) {

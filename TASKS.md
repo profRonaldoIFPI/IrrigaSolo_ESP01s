@@ -72,7 +72,7 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Modificar padrões e parsing JSON em `persistencia.cpp`
 - [x] Atualizar lógica de conexão e publicação em `clienteMqtt.cpp`
 - [x] Modificar interface de configuração de rede em `config.html`
-- [ ] Ajustar endpoints da API de rede em `servidorWeb.cpp`
+- [x] Ajustar endpoints da API de rede em `servidorWeb.cpp`
 - [ ] Compilar e validar a integridade estrutural do firmware
 
 
