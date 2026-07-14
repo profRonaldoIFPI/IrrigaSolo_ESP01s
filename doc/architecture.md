@@ -44,16 +44,18 @@ As configurações persistentes serão separadas em dois arquivos JSON no Little
 {
   "ssidAp": "IrrigaSolo",
   "pwdAp": "admin123",
-  "ssidSta": "RedeLocalCasa",
-  "pwdSta": "senhaSuperSecreta",
+  "ssidSta": "IoTnet",
+  "pwdSta": "Casa20@iot_devices",
   "ntpServer": "pool.ntp.br",
   "timeZone": -3,
   "ntpSyncInterval": 21600,
-  "mqttBroker": "broker.hivemq.com",
+  "mqttBroker": "192.168.1.49",
   "mqttPort": 1883,
-  "mqttUser": "",
-  "mqttPwd": "",
-  "mqttTopic": "irriga_solo"
+  "mqttUser": "iotdevices",
+  "mqttPwd": "iotCasa20",
+  "mqttClientId": "irrigasolo_1",
+  "mqttPubTopic": "irriga_solo/1/status",
+  "mqttSubTopic": "irriga_solo/1/comando"
 }
 ```
 
