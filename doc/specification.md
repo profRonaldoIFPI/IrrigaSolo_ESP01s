@@ -20,7 +20,8 @@ O sistema deve permitir o agendamento de sessões de irrigação para o canal ú
 
 * **RF1.1:** O canal suporta até 6 sessões de irrigação por dia (início em HH:MM e duração em minutos).
   - Se a duração de uma sessão for menor ou igual a 10 minutos, o relé operará de forma contínua.
-  - Se a duração for superior a 10 minutos, o acionamento será fracionado para resfriamento térmico da solenoide em ciclos de 5 minutos ligado e 10 minutos desligado (período total de 15 minutos do ciclo), repetindo-se até o término da sessão.
+  - Se a duração for superior a 10 minutos, o acionamento será fracionado para resfriamento térmico da solenoide em ciclos de 5 minutos ligado e 10 minutos desligado (período total de 15 minutos do ciclo).
+  - Para garantir que a duração configurada reflita o tempo real de irrigação (água ligada), a janela total de tempo decorrido da sessão será expandida (esticada) proporcionalmente aos períodos de descanso.
 * **RF1.2:** A base de tempo deve ser sincronizada via NTP, com consultas periódicas. Em caso de falha de rede, o sistema mantém o relógio local.
 * **RF1.3:** Recuperação de Falha de Energia: O sistema não deve acumular ou repor regas perdidas durante quedas de energia. Ao reiniciar, aguarda-se o próximo horário programado validado pelo relógio atual.
 * **RF1.4:** Proteção no Acionamento Manual: Para proteger fisicamente a bobina da solenoide, qualquer acionamento manual de válvula (via interface web ou comando MQTT) é limitado a no máximo 10 minutos contínuos, desligando-se automaticamente após esse período.
@@ -79,4 +80,4 @@ O sistema deve permitir a atualização de seu código-fonte remotamente pela re
 * **CA-04:** O sistema reconecta-se ao broker MQTT de forma assíncrona (não-bloqueante) em caso de perda de conexão e responde a comandos remotos em tempo real.
 * **CA-05:** Alterações de rede, NTP, MQTT e agendamentos sobrevivem a reinicializações físicas do hardware.
 * **CA-06:** O upload de um binário válido na rota `/update` atualiza o firmware de forma automática e reinicia o microcontrolador com a nova versão activa.
-* **CA-07:** O acionamento de regas agendadas com duração maior que 10 minutos executa obrigatoriamente de forma fracionada (5 minutos ligado, 10 minutos desligado). Qualquer acionamento manual desliga automaticamente após 10 minutos contínuos.
+* **CA-07:** O acionamento de regas agendadas com duração maior que 10 minutos executa obrigatoriamente de forma fracionada (5 minutos ligado, 10 minutos desligado), com a janela de execução expandida (esticada) para garantir que a duração configurada seja o tempo real de irrigação (válvula aberta). Qualquer acionamento manual desliga automaticamente após 10 minutos contínuos.

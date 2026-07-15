@@ -151,7 +151,7 @@ Integrar o sistema à internet de forma eficiente e leve. O uso do protocolo MQT
 
 ### Decisão
 Para proteger fisicamente a válvula solenoide (tipo máquina de lavar roupas) contra superaquecimento:
-1. **Sessões Agendadas Longas (> 10 min):** O firmware irá fracionar a irrigação automaticamente em ciclos periódicos de 5 minutos ligado e 10 minutos desligado (período total de 15 minutos do ciclo) até a expiração da duração da sessão.
+1. **Sessões Agendadas Longas (> 10 min):** O firmware irá fracionar a irrigação automaticamente em ciclos periódicos de 5 minutos ligado e 10 minutos desligado (período total de 15 minutos do ciclo). A janela total da sessão é expandida (esticada) para garantir que o tempo útil configurado seja integralmente cumprido com a válvula aberta.
 2. **Controle Manual:** Qualquer ativação manual do relé (via web ou MQTT) terá um temporizador rígido que desligará o dispositivo automaticamente após 10 minutos contínuos.
 
 ### Motivação
