@@ -73,7 +73,8 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Substituir o polling estático pelo configurável no `main.cpp`
 - [x] Adicionar campo no formulário HTML de `config.html`
 - [x] Ajustar endpoints da API de rede em `servidorWeb.cpp`
-- [x] Implementar a lógica de fracionamento no agendador (`avaliarAgendamentos` em `agendador.cpp`)
+- [x] Implementar a função `obterDuracaoEsticada` em `agendador.cpp`
+- [x] Atualizar a lógica da janela de execução de sessões em `avaliarAgendamentos`
 - [x] Implementar o temporizador de segurança para desligamento automático do controle manual (10 minutos)
 - [x] Atualizar o payload JSON de telemetria MQTT com última e próxima irrigação em `clienteMqtt.cpp`
 - [x] Compilar e validar a integridade estrutural do firmware
