@@ -78,6 +78,19 @@ static bool manualOverrideActive = false;
 static bool manualOverrideState  = false;
 static unsigned long tempoInicioManualMs = 0; // Armazena timestamp de acionamento manual (RF1.4)
 
+static int obterDuracaoEsticada(int duracao) {
+    if (duracao <= 10) {
+        return duracao;
+    }
+    int q = duracao / 5;
+    int r = duracao % 5;
+    if (r == 0) {
+        return (q - 1) * 15 + 5;
+    } else {
+        return q * 15 + r;
+    }
+}
+
 void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minutoAtual) {
     // Avaliar sessões do Canal 1
     bool canal1DeveEstarLigado = false;
@@ -92,8 +105,9 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minut
             continue; // Formato inválido — ignorar silenciosamente
         }
 
-        // Verificar se o minuto atual está dentro da janela [início, início+duração)
-        if (minutoAtual >= minutosInicio && minutoAtual < (minutosInicio + sessao.duracao)) {
+        int duracaoEsticada = obterDuracaoEsticada(sessao.duracao);
+        // Verificar se o minuto atual está dentro da janela [início, início+duraçãoEsticada)
+        if (minutoAtual >= minutosInicio && minutoAtual < (minutosInicio + duracaoEsticada)) {
             // Se a duração da sessão for maior que 10 minutos, aplica o fracionamento (RF1.1)
             if (sessao.duracao > 10) {
                 int minutoRelativo = minutoAtual - minutosInicio;
