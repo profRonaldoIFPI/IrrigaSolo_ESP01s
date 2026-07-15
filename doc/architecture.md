@@ -145,3 +145,15 @@ Utilizar a biblioteca `PubSubClient` para realizar a conexão MQTT com um broker
 ### Motivação
 Integrar o sistema à internet de forma eficiente e leve. O uso do protocolo MQTT permite baixo consumo de banda e uma arquitetura baseada em eventos (publicador/assinante), ideal para o monitoramento e controle em tempo real via internet a partir de aplicativos ou brokers gratuitos de nuvem.
 
+---
+
+# ADR-011 - Proteção Térmica da Válvula Solenoide (Fracionamento e Limite Manual)
+
+### Decisão
+Para proteger fisicamente a válvula solenoide (tipo máquina de lavar roupas) contra superaquecimento:
+1. **Sessões Agendadas Longas (> 10 min):** O firmware irá fracionar a irrigação automaticamente em ciclos periódicos de 5 minutos ligado e 10 minutos desligado (período total de 15 minutos do ciclo) até a expiração da duração da sessão.
+2. **Controle Manual:** Qualquer ativação manual do relé (via web ou MQTT) terá um temporizador rígido que desligará o dispositivo automaticamente após 10 minutos contínuos.
+
+### Motivação
+Essas válvulas solenoides residenciais não são projetadas para regime de operação contínuo longo e podem queimar por dissipação térmica inadequada. A implementação desse recurso no nível do firmware impede falhas de hardware no mundo físico.
+
