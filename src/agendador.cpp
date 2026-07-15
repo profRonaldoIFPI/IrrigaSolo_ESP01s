@@ -72,10 +72,11 @@ void inicializarReles() {
     digitalWrite(PINO_RELE_CANAL_1, LOW);
 }
 
-// Variáveis internas para controle de override manual e detecção de transições
+// Variáveis internas para controle de override manual, temporizadores e detecção de transições
 static bool ultimoEstadoAgendado = false;
 static bool manualOverrideActive = false;
 static bool manualOverrideState  = false;
+static unsigned long tempoInicioManualMs = 0; // Armazena timestamp de acionamento manual (RF1.4)
 
 void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minutoAtual) {
     // Avaliar sessões do Canal 1
@@ -93,8 +94,15 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minut
 
         // Verificar se o minuto atual está dentro da janela [início, início+duração)
         if (minutoAtual >= minutosInicio && minutoAtual < (minutosInicio + sessao.duracao)) {
-            canal1DeveEstarLigado = true;
-            break; // Basta uma sessão ativa para ligar o canal
+            // Se a duração da sessão for maior que 10 minutos, aplica o fracionamento (RF1.1)
+            if (sessao.duracao > 10) {
+                int minutoRelativo = minutoAtual - minutosInicio;
+                // Ciclos de 5 min LIGADO e 10 min DESLIGADO (período de 15 minutos)
+                canal1DeveEstarLigado = (minutoRelativo % 15) < 5;
+            } else {
+                canal1DeveEstarLigado = true;
+            }
+            break; // Basta uma sessão ativa para definir o estado do canal
         }
     }
 
@@ -103,6 +111,14 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minut
         manualOverrideActive = false;
         ultimoEstadoAgendado = canal1DeveEstarLigado;
         Serial.println(F("[INFO] Transição de agendamento detectada. Retornando ao modo automático."));
+    }
+
+    // Limite de segurança manual de no máximo 10 minutos ligado (RF1.4)
+    if (manualOverrideActive && manualOverrideState) {
+        if (millis() - tempoInicioManualMs >= 600000UL) { // 10 minutos (600.000 ms)
+            manualOverrideState = false;
+            Serial.println(F("[WARN] Limite de segurança manual de 10 minutos atingido. Desligando a válvula solenoide."));
+        }
     }
 
     // Grava no pino físico o estado de override ou o agendado
@@ -121,6 +137,10 @@ void controleManual(uint8_t canal, bool estado) {
     // Ativar o override manual e registrar o estado desejado
     manualOverrideActive = true;
     manualOverrideState  = estado;
+
+    if (estado) {
+        tempoInicioManualMs = millis(); // Registra o início do temporizador de segurança
+    }
 
     digitalWrite(pino, estado ? HIGH : LOW);
 
