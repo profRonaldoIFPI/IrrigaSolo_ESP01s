@@ -94,10 +94,11 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Criar arquivo de cabeçalho `include/autovigilancia.h`
 - [x] Criar arquivo de implementação `src/autovigilancia.cpp` com monitor de heap, rede e reset diário
 - [x] Integrar inicialização e processamento em `src/main.cpp`
-- [/] Validar e comitar a Etapa 12
+- [x] Validar e comitar a Etapa 12
 
 ## Etapa 13 — Atualização de Documentação dos Diretórios
-- [ ] Atualizar `src/README.md`
-- [ ] Atualizar `include/README.md`
-- [ ] Validar e comitar a Etapa 13
+- [x] Atualizar `src/README.md`
+- [x] Atualizar `include/README.md`
+- [x] Validar e comitar a Etapa 13
+
 

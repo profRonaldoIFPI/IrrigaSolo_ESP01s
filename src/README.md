@@ -9,13 +9,15 @@ Este diretório contém os arquivos de implementação (`.cpp`) do firmware Irri
 | Arquivo | Responsabilidade |
 |---|---|
 | `main.cpp` | Ponto de entrada do firmware. Orquestra `setup()` e `loop()`. |
-| [persistencia.cpp](persistencia.cpp) | Leitura/escrita de JSON no LittleFS (ADR-004). |
+| [persistencia.cpp](persistencia.cpp) | Leitura/escrita de JSON no LittleFS (ADR-004) e volume acumulado de água. |
 | [redeWifi.cpp](redeWifi.cpp) | Gerenciamento de Wi-Fi AP/STA com fallback (RF2). |
 | [relogioNtp.cpp](relogioNtp.cpp) | Sincronização NTP e formatação de data/hora (RF1.2). |
-| [agendador.cpp](agendador.cpp) | Motor de agendamento com validação de conflitos (ADR-005, ADR-006). |
-| [servidorWeb.cpp](servidorWeb.cpp) | Servidor HTTP com endpoints e páginas PROGMEM. |
+| [agendador.cpp](agendador.cpp) | Motor de agendamento com controle de janela e override manual (ADR-005, ADR-011). |
+| [servidorWeb.cpp](servidorWeb.cpp) | Servidor HTTP com endpoints e páginas PROGMEM (ADR-002, ADR-009). |
+| [sensorFluxo.cpp](sensorFluxo.cpp) | Leitura de vazão e acúmulo de volume com salvamento persistente inteligente (ADR-006). |
+| [clienteMqtt.cpp](clienteMqtt.cpp) | Publicação de telemetria rica e escuta de comandos via protocolo MQTT (ADR-010). |
+| [autovigilancia.cpp](autovigilancia.cpp) | Mecanismo de Watchdog de heap, rede e reset preventivo programado de 24h. |
 
-> **Nota:** Novos módulos (`.cpp`) serão adicionados conforme as etapas de implementação avançam.
 
 ## Dependências / Relações
 
