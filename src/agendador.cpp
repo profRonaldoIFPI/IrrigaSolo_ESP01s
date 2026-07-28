@@ -16,6 +16,14 @@
 
 #include "agendador.h"
 #include <Arduino.h>
+#include "relogioNtp.h"
+
+// Variáveis locais para armazenar o horário da última irrigação real na RAM
+static char horarioUltimaIrrigacaoRAM[6] = "--:--";
+
+// Protótipos de funções auxiliares internas
+static void setarEstadoReleFisico(bool ligado);
+
 
 // ---------------------------------------------------------------------------
 // Funções auxiliares internas
@@ -137,7 +145,7 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minut
 
     // Grava no pino físico o estado de override ou o agendado
     bool estadoFinal = manualOverrideActive ? manualOverrideState : canal1DeveEstarLigado;
-    digitalWrite(PINO_RELE_CANAL_1, estadoFinal ? HIGH : LOW);
+    setarEstadoReleFisico(estadoFinal);
 }
 
 void controleManual(uint8_t canal, bool estado) {
@@ -156,11 +164,31 @@ void controleManual(uint8_t canal, bool estado) {
         tempoInicioManualMs = millis(); // Registra o início do temporizador de segurança
     }
 
-    digitalWrite(pino, estado ? HIGH : LOW);
+    setarEstadoReleFisico(estado);
 
     Serial.print(F("[INFO] Override manual ativado — Canal "));
     Serial.print(canal);
     Serial.println(estado ? F(": LIGADO") : F(": DESLIGADO"));
+}
+
+/**
+ * Função interna centralizada para acionamento físico do relé.
+ * Detecta a transição de desligado para ligado e registra a hora no formato HH:MM (NTP).
+ */
+static void setarEstadoReleFisico(bool ligado) {
+    bool estadoAnterior = (digitalRead(PINO_RELE_CANAL_1) == HIGH);
+    
+    digitalWrite(PINO_RELE_CANAL_1, ligado ? HIGH : LOW);
+    
+    // Se a válvula acabou de ligar (transição de desligado para ligado)
+    if (!estadoAnterior && ligado) {
+        String horaCompleta = obterHoraFormatada(); // Retorna "HH:MM:SS"
+        if (horaCompleta.length() >= 5) {
+            strlcpy(horarioUltimaIrrigacaoRAM, horaCompleta.c_str(), 6);
+            Serial.print(F("[INFO] Válvula ligada. Horário registrado na RAM: "));
+            Serial.println(horarioUltimaIrrigacaoRAM);
+        }
+    }
 }
 
 bool obterEstadoRele(uint8_t canal) {
@@ -202,6 +230,12 @@ void obterProximaIrrigacao(const ConfiguracaoIrrigacao &config, int minutoAtual,
 }
 
 void obterUltimaIrrigacao(const ConfiguracaoIrrigacao &config, int minutoAtual, char *buffer, size_t maxLen) {
+    // Se o horário de última irrigação foi registrado na RAM, prioriza esse valor
+    if (strcmp(horarioUltimaIrrigacaoRAM, "--:--") != 0) {
+        strlcpy(buffer, horarioUltimaIrrigacaoRAM, maxLen);
+        return;
+    }
+
     int menorDiff = 9999;
     const SessaoIrrigacao* ultima = nullptr;
 

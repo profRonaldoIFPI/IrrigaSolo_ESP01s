@@ -106,5 +106,11 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Remover chamadas de `forcarSalvamentoVolume` em `autovigilancia.cpp`
 - [x] Validar compilação e comitar a Etapa 14
 
+## Etapa 15 — Registro de Horário da Última Irrigação Manual e Agendada
+- [x] Centralizar a escrita do relé em `setarEstadoReleFisico` em `agendador.cpp` e registrar a hora de início
+- [x] Atualizar `obterUltimaIrrigacao` para priorizar o valor registrado em RAM
+- [x] Validar compilação e comitar a Etapa 15
+
+
 
 
