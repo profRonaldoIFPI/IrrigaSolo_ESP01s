@@ -72,19 +72,13 @@ void processarSensorFluxo() {
         // Lógica de gravação inteligente no LittleFS para evitar desgaste da Flash (RULE[embedded-constraints.md])
         bool valvulaLigada = obterEstadoRele(1);
 
-        // Cenário 1: Válvula fechou (transição de ligada para desligada)
+        // Cenário Único: Válvula fechou (transição de ligada para desligada)
         if (valvulaEstavaLigada && !valvulaLigada) {
             if (volumeTotalL != ultimoVolumeSalvoL) {
                 Serial.println(F("[INFO] Válvula fechada. Salvando volume acumulado."));
                 salvarVolumeAcumulado(volumeTotalL);
                 ultimoVolumeSalvoL = volumeTotalL;
             }
-        }
-        // Cenário 2: Acúmulo de mais de 5.0 Litros desde a última gravação (segurança contra quedas de energia)
-        else if (volumeTotalL - ultimoVolumeSalvoL >= 5.0f) {
-            Serial.println(F("[INFO] Acúmulo de 5L desde a última gravação. Salvando volume acumulado preventivamente."));
-            salvarVolumeAcumulado(volumeTotalL);
-            ultimoVolumeSalvoL = volumeTotalL;
         }
 
         valvulaEstavaLigada = valvulaLigada;
@@ -108,10 +102,4 @@ void zerarVolumeTotal() {
     Serial.println(F("[INFO] Volume total de agua zerado manualmente e salvo na Flash."));
 }
 
-void forcarSalvamentoVolume() {
-    if (volumeTotalL != ultimoVolumeSalvoL) {
-        Serial.println(F("[INFO] Forçando salvamento de volume acumulado antes do reinício."));
-        salvarVolumeAcumulado(volumeTotalL);
-        ultimoVolumeSalvoL = volumeTotalL;
-    }
-}
+

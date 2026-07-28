@@ -101,4 +101,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Atualizar `include/README.md`
 - [x] Validar e comitar a Etapa 13
 
+## Etapa 14 — Simplificação da Persistência do Volume de Água
+- [x] Remover lógica de salvamento a cada 5L e de salvamento sob demanda no reinício em `sensorFluxo.h` e `sensorFluxo.cpp`
+- [x] Remover chamadas de `forcarSalvamentoVolume` em `autovigilancia.cpp`
+- [x] Validar compilação e comitar a Etapa 14
+
+
 

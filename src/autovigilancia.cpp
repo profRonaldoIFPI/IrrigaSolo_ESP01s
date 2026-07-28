@@ -40,7 +40,6 @@ void processarAutovigilancia() {
     if (agora >= INTERVALO_RESET_DIARIO_MS) {
         if (!obterEstadoRele(1)) {
             Serial.println(F("[WARN] Watchdog: Executando reinício preventivo programado de 24 horas."));
-            forcarSalvamentoVolume();
             delay(500); // Aguarda buffer serial esvaziar
             ESP.restart();
         }
@@ -64,7 +63,6 @@ void processarAutovigilancia() {
                 // Heap crítico persistente! Reinicia de forma segura
                 if (!obterEstadoRele(1)) {
                     Serial.println(F("[ERROR] Watchdog: Heap livre crítico persistente. Reiniciando dispositivo de forma segura."));
-                    forcarSalvamentoVolume();
                     delay(500);
                     ESP.restart();
                 } else {
@@ -93,7 +91,6 @@ void processarAutovigilancia() {
                     if (agora - ultimoWifiDesconectadoMs >= TEMPO_MAX_DESCONECTADO_MS) {
                         if (!obterEstadoRele(1)) {
                             Serial.println(F("[ERROR] Watchdog: Wi-Fi STA desconectado há mais de 1 hora. Reiniciando rádio físico via reboot."));
-                            forcarSalvamentoVolume();
                             delay(500);
                             ESP.restart();
                         }
