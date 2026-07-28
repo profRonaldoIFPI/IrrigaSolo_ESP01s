@@ -29,6 +29,7 @@
 #include "servidorWeb.h"
 #include "sensorFluxo.h"
 #include "clienteMqtt.h"
+#include "autovigilancia.h"
 
 // ---------------------------------------------------------------------------
 // Variáveis globais do sistema
@@ -113,6 +114,11 @@ void setup() {
     // -----------------------------------------------------------------------
     inicializarServidor(&configRede, &configIrrigacao);
 
+    // -----------------------------------------------------------------------
+    // PASSO 10: Autovigilância (Watchdog de resiliência contra travamentos)
+    // -----------------------------------------------------------------------
+    inicializarAutovigilancia();
+
     Serial.println(F("========================================"));
     Serial.println(F("  IrrigaSolo pronto para operar."));
     Serial.println(F("========================================"));
@@ -137,6 +143,9 @@ void loop() {
 
     // Processar loop de conexão e escuta do MQTT (RF5.2)
     processarMqtt();
+
+    // Executar rotinas do módulo de autovigilância contra travamentos
+    processarAutovigilancia();
 
     unsigned long agora = millis();
 

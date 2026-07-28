@@ -88,13 +88,13 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 ## Etapa 11 — Telemetria MQTT Expandida (JSON com Uptime, Heap, IP, RSSI, IDs)
 - [x] Ampliar buffer de telemetria MQTT em `clienteMqtt.cpp`
 - [x] Adicionar dados adicionais de diagnóstico no payload JSON de telemetria
-- [/] Validar e comitar a Etapa 11
+- [x] Validar e comitar a Etapa 11
 
 ## Etapa 12 — Mecanismo de Autovigilância (Watchdog e Reset Programado)
-- [ ] Criar arquivo de cabeçalho `include/autovigilancia.h`
-- [ ] Criar arquivo de implementação `src/autovigilancia.cpp` com monitor de heap, rede e reset diário
-- [ ] Integrar inicialização e processamento em `src/main.cpp`
-- [ ] Validar e comitar a Etapa 12
+- [x] Criar arquivo de cabeçalho `include/autovigilancia.h`
+- [x] Criar arquivo de implementação `src/autovigilancia.cpp` com monitor de heap, rede e reset diário
+- [x] Integrar inicialização e processamento em `src/main.cpp`
+- [/] Validar e comitar a Etapa 12
 
 ## Etapa 13 — Atualização de Documentação dos Diretórios
 - [ ] Atualizar `src/README.md`
