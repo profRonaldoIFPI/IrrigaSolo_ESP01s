@@ -103,19 +103,32 @@ void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL,
         return;
     }
 
-    // Gerar JSON usando buffer estático em vez de String (evita fragmentação do Heap, conforme embedded-constraints.md)
-    char payloadJson[256];
+    // Coleta de dados de diagnóstico em tempo real
+    IPAddress ip = WiFi.localIP();
+    int32_t rssi = WiFi.RSSI();
+    uint32_t heapLivre = ESP.getFreeHeap();
+    uint32_t tempoOnline = millis() / 1000;
+    uint32_t chipId = ESP.getChipId();
+
+    // Buffer estático expandido para evitar fragmentação e suportar a carga de telemetria expandida (embedded-constraints.md)
+    char payloadJson[512];
     snprintf(payloadJson, sizeof(payloadJson),
-             "{\"valvula\":\"%s\",\"vazao\":%.2f,\"volume\":%.2f,\"ultima_irrigacao\":\"%s\",\"proxima_irrigacao\":\"%s\"}",
+             "{\"id\":\"%s\",\"chip_id\":%u,\"ip\":\"%d.%d.%d.%d\",\"valvula\":\"%s\",\"vazao\":%.2f,\"volume\":%.2f,\"ultima_irrigacao\":\"%s\",\"proxima_irrigacao\":\"%s\",\"uptime\":%u,\"rssi\":%d,\"heap_livre\":%u}",
+             configRedeLocal.mqttClientId,
+             chipId,
+             ip[0], ip[1], ip[2], ip[3],
              valvulaLigada ? "LIGADA" : "DESLIGADA",
              vazaoLMin,
              volumeTotalL,
              ultimaIrrigacao,
-             proximaIrrigacao);
+             proximaIrrigacao,
+             tempoOnline,
+             rssi,
+             heapLivre);
 
     bool statusEnvio = mqttClient.publish(configRedeLocal.mqttPublishTopic, payloadJson);
     if (statusEnvio) {
-        Serial.print(F("[MQTT] Telemetria publicada: "));
+        Serial.print(F("[MQTT] Telemetria publicada com sucesso: "));
         Serial.println(payloadJson);
     } else {
         Serial.println(F("[MQTT] Erro ao publicar telemetria."));
