@@ -1,5 +1,11 @@
 #include "sensorFluxo.h"
 #include "pinosHardware.h"
+#include "agendador.h"
+#include "persistencia.h"
+
+// Variáveis locais para controle de salvamento na Flash
+static float ultimoVolumeSalvoL = 0.0f;
+static bool valvulaEstavaLigada = false;
 
 // Contador de pulsos incrementado na interrupção de hardware (deve ser volatile)
 static volatile uint32_t contagemPulsos = 0;
@@ -25,9 +31,17 @@ void inicializarSensorFluxo() {
     ultimoCalculoMs = millis();
     contagemPulsos = 0;
     vazaoLMin = 0.0f;
-    volumeTotalL = 0.0f;
     
-    Serial.println(F("[INFO] Sensor de fluxo YF-S201B inicializado com sucesso."));
+    // Carregar volume acumulado salvo da Flash (persistência)
+    if (!carregarVolumeAcumulado(volumeTotalL)) {
+        volumeTotalL = 0.0f;
+    }
+    ultimoVolumeSalvoL = volumeTotalL;
+    valvulaEstavaLigada = obterEstadoRele(1);
+    
+    Serial.print(F("[INFO] Sensor de fluxo YF-S201B inicializado. Volume acumulado inicial: "));
+    Serial.print(volumeTotalL);
+    Serial.println(F(" L"));
 }
 
 void processarSensorFluxo() {
@@ -54,6 +68,26 @@ void processarSensorFluxo() {
         // Tempo em minutos = intervaloMs / 60000.0f
         float volumeIntervaloL = vazaoLMin * ((float)intervaloMs / 60000.0f);
         volumeTotalL += volumeIntervaloL;
+
+        // Lógica de gravação inteligente no LittleFS para evitar desgaste da Flash (RULE[embedded-constraints.md])
+        bool valvulaLigada = obterEstadoRele(1);
+
+        // Cenário 1: Válvula fechou (transição de ligada para desligada)
+        if (valvulaEstavaLigada && !valvulaLigada) {
+            if (volumeTotalL != ultimoVolumeSalvoL) {
+                Serial.println(F("[INFO] Válvula fechada. Salvando volume acumulado."));
+                salvarVolumeAcumulado(volumeTotalL);
+                ultimoVolumeSalvoL = volumeTotalL;
+            }
+        }
+        // Cenário 2: Acúmulo de mais de 5.0 Litros desde a última gravação (segurança contra quedas de energia)
+        else if (volumeTotalL - ultimoVolumeSalvoL >= 5.0f) {
+            Serial.println(F("[INFO] Acúmulo de 5L desde a última gravação. Salvando volume acumulado preventivamente."));
+            salvarVolumeAcumulado(volumeTotalL);
+            ultimoVolumeSalvoL = volumeTotalL;
+        }
+
+        valvulaEstavaLigada = valvulaLigada;
     }
 }
 
@@ -69,5 +103,15 @@ void zerarVolumeTotal() {
     noInterrupts();
     volumeTotalL = 0.0f;
     interrupts();
-    Serial.println(F("[INFO] Volume total de agua zerado manualmente."));
+    ultimoVolumeSalvoL = 0.0f;
+    salvarVolumeAcumulado(0.0f); // Persiste a zeragem na Flash imediatamente
+    Serial.println(F("[INFO] Volume total de agua zerado manualmente e salvo na Flash."));
+}
+
+void forcarSalvamentoVolume() {
+    if (volumeTotalL != ultimoVolumeSalvoL) {
+        Serial.println(F("[INFO] Forçando salvamento de volume acumulado antes do reinício."));
+        salvarVolumeAcumulado(volumeTotalL);
+        ultimoVolumeSalvoL = volumeTotalL;
+    }
 }

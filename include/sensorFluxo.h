@@ -43,3 +43,11 @@ float obterVolumeTotalL();
  * Zera o contador de volume acumulado. Útil para medir o consumo de uma rega individual.
  */
 void zerarVolumeTotal();
+
+/**
+ * Força a gravação imediata do volume acumulado de água no LittleFS,
+ * caso o volume atual seja diferente do último volume salvo na Flash.
+ * Usada antes de reinicializações preventivas do sistema pela autovigilância.
+ */
+void forcarSalvamentoVolume();
+

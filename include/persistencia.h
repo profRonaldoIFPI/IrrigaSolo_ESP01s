@@ -72,3 +72,27 @@ bool carregarConfiguracaoIrrigacao(ConfiguracaoIrrigacao& configIrrigacao);
  * @return true se a escrita foi bem-sucedida.
  */
 bool salvarConfiguracaoIrrigacao(const ConfiguracaoIrrigacao& configIrrigacao);
+
+/**
+ * Carrega o volume acumulado de água a partir do arquivo /volume.json.
+ *
+ * Se o arquivo não existir ou estiver corrompido, inicializa o volume
+ * com 0.0f (defaults seguros) e retorna false (RF6.1).
+ *
+ * @param volume Referência para a variável float que receberá o valor.
+ * @return true se a leitura foi bem-sucedida.
+ */
+bool carregarVolumeAcumulado(float& volume);
+
+/**
+ * Salva o volume acumulado de água no arquivo /volume.json.
+ *
+ * Serializa o valor do volume em um JSON simples no LittleFS.
+ * Para evitar o desgaste prematuro da Flash do ESP8266, esta função
+ * deve ser chamada apenas em momentos estratégicos (fim de rega, reinício ou zeragem).
+ *
+ * @param volume Valor do volume acumulado em Litros a persistir.
+ * @return true se a escrita foi bem-sucedida.
+ */
+bool salvarVolumeAcumulado(float volume);
+

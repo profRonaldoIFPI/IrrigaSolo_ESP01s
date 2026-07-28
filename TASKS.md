@@ -78,3 +78,26 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Implementar o temporizador de segurança para desligamento automático do controle manual (10 minutos)
 - [x] Atualizar o payload JSON de telemetria MQTT com última e próxima irrigação em `clienteMqtt.cpp`
 - [x] Compilar e validar a integridade estrutural do firmware
+
+## Etapa 10 — Persistência do Volume de Água (LittleFS)
+- [x] Declarar `carregarVolumeAcumulado` e `salvarVolumeAcumulado` em `persistencia.h`
+- [x] Implementar leitura e escrita de `/volume.json` em `persistencia.cpp`
+- [x] Atualizar `sensorFluxo.h` e `sensorFluxo.cpp` para carregar e salvar de forma inteligente
+- [x] Validar compilação e comitar da Etapa 10
+
+## Etapa 11 — Telemetria MQTT Expandida (JSON com Uptime, Heap, IP, RSSI, IDs)
+- [/] Ampliar buffer de telemetria MQTT em `clienteMqtt.cpp`
+- [ ] Adicionar dados adicionais de diagnóstico no payload JSON de telemetria
+- [ ] Validar e comitar a Etapa 11
+
+## Etapa 12 — Mecanismo de Autovigilância (Watchdog e Reset Programado)
+- [ ] Criar arquivo de cabeçalho `include/autovigilancia.h`
+- [ ] Criar arquivo de implementação `src/autovigilancia.cpp` com monitor de heap, rede e reset diário
+- [ ] Integrar inicialização e processamento em `src/main.cpp`
+- [ ] Validar e comitar a Etapa 12
+
+## Etapa 13 — Atualização de Documentação dos Diretórios
+- [ ] Atualizar `src/README.md`
+- [ ] Atualizar `include/README.md`
+- [ ] Validar e comitar a Etapa 13
+
