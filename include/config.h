@@ -513,8 +513,21 @@ const char config_html[] PROGMEM = R"rawliteral(
                 <div class="form-hint">Deixe em branco para manter a senha atual.</div>
             </div>
             <div class="form-group">
-                <label for="campo_mqtt_topic">Prefixo do Tópico</label>
-                <input type="text" id="campo_mqtt_topic" placeholder="irriga_solo" maxlength="32">
+                <label for="campo_mqtt_client_id">Client ID</label>
+                <input type="text" id="campo_mqtt_client_id" placeholder="irrigasolo_1" maxlength="32">
+            </div>
+            <div class="form-group">
+                <label for="campo_mqtt_pub_topic">Tópico de Publicação (Telemetria)</label>
+                <input type="text" id="campo_mqtt_pub_topic" placeholder="irriga_solo/1/status" maxlength="64">
+            </div>
+            <div class="form-group">
+                <label for="campo_mqtt_sub_topic">Tópico de Assinatura (Comando)</label>
+                <input type="text" id="campo_mqtt_sub_topic" placeholder="irriga_solo/1/comando" maxlength="64">
+            </div>
+            <div class="form-group">
+                <label for="campo_mqtt_interval">Intervalo de Publicação (segundos)</label>
+                <input type="number" id="campo_mqtt_interval" value="10" min="1" max="3600">
+                <div class="form-hint">Padrão: 10 segundos. Mínimo: 1s.</div>
             </div>
         </div>
 
@@ -564,7 +577,10 @@ const char config_html[] PROGMEM = R"rawliteral(
                     document.getElementById('campo_mqtt_broker').value = dados.mqttBroker || 'broker.hivemq.com';
                     document.getElementById('campo_mqtt_port').value = dados.mqttPort || 1883;
                     document.getElementById('campo_mqtt_user').value = dados.mqttUser || '';
-                    document.getElementById('campo_mqtt_topic').value = dados.mqttTopic || 'irriga_solo';
+                    document.getElementById('campo_mqtt_client_id').value = dados.mqttClientId || '';
+                    document.getElementById('campo_mqtt_pub_topic').value = dados.mqttPubTopic || '';
+                    document.getElementById('campo_mqtt_sub_topic').value = dados.mqttSubTopic || '';
+                    document.getElementById('campo_mqtt_interval').value = dados.mqttInterval || 10;
                 })
                 .catch(function (erro) { console.error('Erro ao carregar config de rede:', erro); });
         }
@@ -588,7 +604,10 @@ const char config_html[] PROGMEM = R"rawliteral(
                 mqttBroker: document.getElementById('campo_mqtt_broker').value,
                 mqttPort: parseInt(document.getElementById('campo_mqtt_port').value) || 1883,
                 mqttUser: document.getElementById('campo_mqtt_user').value,
-                mqttTopic: document.getElementById('campo_mqtt_topic').value
+                mqttClientId: document.getElementById('campo_mqtt_client_id').value,
+                mqttPubTopic: document.getElementById('campo_mqtt_pub_topic').value,
+                mqttSubTopic: document.getElementById('campo_mqtt_sub_topic').value,
+                mqttInterval: parseInt(document.getElementById('campo_mqtt_interval').value) || 10
             };
 
             // Incluir senhas apenas se preenchidas
