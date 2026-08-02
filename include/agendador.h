@@ -67,6 +67,22 @@ void controleManual(uint8_t canal, bool estado);
 bool obterEstadoRele(uint8_t canal);
 
 /**
+ * Retorna o total de disparos espúrios detectados por ruído elétrico.
+ *
+ * @return Número acumulado de disparos não autorizados debelados.
+ */
+uint32_t obterContadorDisparosEspurios();
+
+/**
+ * Verifica o estado físico do pino do relé contra o estado autorizado.
+ *
+ * Se o pino físico estiver HIGH (ligado) sem autorização do agendador ou
+ * override manual, desliga a válvula imediatamente (LOW), registra o evento
+ * e incrementa o contador de disparos espúrios (RF6.3, CA-08).
+ */
+void verificarEProtegerEstadoReleFisico();
+
+/**
  * Obtém o horário de início da próxima irrigação programada.
  *
  * @param config Configuração completa de irrigação.

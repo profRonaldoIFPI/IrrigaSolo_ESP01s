@@ -22,6 +22,13 @@
 #include <Arduino.h>
 
 /**
+ * Retorna uma string descritiva contendo o motivo do último reset de hardware/software.
+ *
+ * @return Ponteiro para a string legível com o motivo do reset.
+ */
+const char* obterMotivoReset();
+
+/**
  * Inicializa as variáveis e timestamps do monitoramento de saúde do sistema.
  * Deve ser chamado ao final da função setup() no arquivo main.cpp.
  */

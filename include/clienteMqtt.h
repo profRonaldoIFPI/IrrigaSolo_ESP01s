@@ -11,14 +11,23 @@
  */
 
 #include "estruturas.h"
+#include "autovigilancia.h"
 
 /**
  * Inicializa a biblioteca PubSubClient com as configurações de rede/broker carregadas
  * e define a função de callback para recebimento de comandos.
  *
  * @param config Referência para a struct de configuração de rede contendo os dados do Broker.
+ * @param configIrrigacao Ponteiro opcional para a struct de agendamentos de irrigação.
  */
-void inicializarMqtt(const ConfiguracaoRede& config);
+void inicializarMqtt(const ConfiguracaoRede& config, const ConfiguracaoIrrigacao* configIrrigacao = nullptr);
+
+/**
+ * Registra o ponteiro da configuração de agendamentos de irrigação no módulo MQTT.
+ *
+ * @param config Ponteiro para a estrutura de agendamentos de irrigação.
+ */
+void registrarConfiguracaoIrrigacaoMqtt(const ConfiguracaoIrrigacao* config);
 
 /**
  * Mantém a conexão ativa com o Broker MQTT e processa a fila de mensagens recebidas.
@@ -37,6 +46,18 @@ void processarMqtt();
  * @param proximaIrrigacao Horário de início da próxima rega ("HH:MM").
  */
 void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL, const char* ultimaIrrigacao, const char* proximaIrrigacao);
+
+/**
+ * Publica o anúncio de reboot contendo motivo do reset, uptime e disparos espúrios
+ * no tópico dedicated `<mqttPublishTopic>/reboot` (RF5.3, CA-09).
+ */
+void publicarStatusReboot();
+
+/**
+ * Publica as 6 sessões de agendamento de irrigação em formato JSON
+ * no tópico dedicado `<mqttPublishTopic>/agendamentos` (RF5.3, CA-09).
+ */
+void publicarAgendamentos();
 
 /**
  * Retorna se o cliente está conectado ao Broker MQTT.

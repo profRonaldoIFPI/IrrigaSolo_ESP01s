@@ -113,12 +113,12 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 
 ## Etapa 16 — Proteção Anti-Ruído, Telemetria de Boot e Tópicos MQTT (Reboot e Agendamentos)
 - [x] Atualizar a documentação de especificação e arquitetura em `/doc` com RF5.3, RF6.3 e ADR-012
-- [ ] Implementar auto-verificação do pino do relé e contador de disparos espúrios em `agendador.h` e `agendador.cpp`
-- [ ] Registrar motivo de reset de hardware e auto-recuperação Wi-Fi em `autovigilancia.h` e `autovigilancia.cpp`
-- [ ] Implementar tópicos MQTT dedicados de reboot e agendamentos em `clienteMqtt.h` e `clienteMqtt.cpp`
-- [ ] Integrar fluxo no Super Loop em `main.cpp`
-- [ ] Atualizar documentação dos diretórios `src/README.md` e `include/README.md`
-- [ ] Validar compilação e realizar os commits de cada sub-etapa
+- [x] Implementar auto-verificação do pino do relé e contador de disparos espúrios em `agendador.h` e `agendador.cpp`
+- [x] Registrar motivo de reset de hardware e auto-recuperação Wi-Fi em `autovigilancia.h` e `autovigilancia.cpp`
+- [x] Implementar tópicos MQTT dedicados de reboot e agendamentos em `clienteMqtt.h` e `clienteMqtt.cpp`
+- [x] Integrar fluxo no Super Loop em `main.cpp`
+- [x] Atualizar documentação dos diretórios `src/README.md` e `include/README.md`
+- [x] Validar compilação e realizar os commits de cada sub-etapa
 
 
 

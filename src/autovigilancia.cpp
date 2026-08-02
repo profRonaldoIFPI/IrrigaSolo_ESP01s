@@ -8,7 +8,11 @@
 // ---------------------------------------------------------------------------
 static unsigned long ultimoMonitoramentoMs = 0;
 static unsigned long ultimoWifiDesconectadoMs = 0;
+static unsigned long ultimaTentativaReconexaoWifiMs = 0;
 static bool wifiEstavaConectado = true;
+
+// Buffer estático para armazenar o motivo do último reset de hardware/software
+static char motivoResetBuffer[32] = "Power-on / Desconhecido";
 
 // Contador de leituras consecutivas de heap baixo (para evitar picos espúrios)
 static uint8_t leiturasHeapBaixo = 0;
@@ -17,19 +21,33 @@ static uint8_t leiturasHeapBaixo = 0;
 // Constantes de tempo e limites (conforme especificação de resiliência)
 // ---------------------------------------------------------------------------
 static const unsigned long INTERVALO_MONITORAMENTO_MS = 10000;   // Verificação a cada 10s
+static const unsigned long INTERVALO_RECONEXAO_WIFI_MS = 15000;  // Tentativa suave de reconexão Wi-Fi a cada 15s
 static const unsigned long TEMPO_MAX_DESCONECTADO_MS  = 3600000; // Limite de 1 hora desconectado em STA
 static const unsigned long INTERVALO_RESET_DIARIO_MS  = 86400000; // Reset diário preventivo de 24 horas
 
 // 6 KB é um limite que garante que o stack de rede e parser JSON funcionem com folga
 static const uint32_t LIMITE_HEAP_CRITICO = 6000;
 
+const char* obterMotivoReset() {
+    return motivoResetBuffer;
+}
+
 void inicializarAutovigilancia() {
     ultimoMonitoramentoMs = millis();
     ultimoWifiDesconectadoMs = millis();
+    ultimaTentativaReconexaoWifiMs = millis();
     wifiEstavaConectado = (WiFi.status() == WL_CONNECTED);
     leiturasHeapBaixo = 0;
 
-    Serial.println(F("[INFO] Autovigilância iniciada. Monitorando: Reset 24h, Heap > 6KB, WiFi STA Máx 1h."));
+    // Capturar o motivo do último reset do SDK do ESP8266
+    String razesReset = ESP.getResetReason();
+    if (razesReset.length() > 0) {
+        strlcpy(motivoResetBuffer, razesReset.c_str(), sizeof(motivoResetBuffer));
+    }
+
+    Serial.print(F("[INFO] Autovigilância iniciada. Motivo do último reset: "));
+    Serial.println(motivoResetBuffer);
+    Serial.println(F("[INFO] Monitorando: Reset 24h, Heap > 6KB, Auto-Recuperação Wi-Fi STA."));
 }
 
 void processarAutovigilancia() {
@@ -73,7 +91,7 @@ void processarAutovigilancia() {
             leiturasHeapBaixo = 0; // Normalizou
         }
 
-        // B) Monitoramento de Conexão Wi-Fi Travada em STA
+        // B) Monitoramento e Auto-Recuperação de Conexão Wi-Fi Travada em STA
         // Monitoramos apenas se o chip estiver operando no modo cliente (WIFI_STA)
         if (WiFi.getMode() == WIFI_STA) {
             bool wifiConectado = (WiFi.status() == WL_CONNECTED);
@@ -85,15 +103,22 @@ void processarAutovigilancia() {
                     // Detectou a desconexão no instante atual
                     ultimoWifiDesconectadoMs = agora;
                     wifiEstavaConectado = false;
-                    Serial.println(F("[WARN] Watchdog: Wi-Fi STA desconectado. Iniciando temporizador de tolerância de 1 hora."));
-                } else {
-                    // Monitora se o tempo desconectado contínuo ultrapassa o limite de 1 hora
-                    if (agora - ultimoWifiDesconectadoMs >= TEMPO_MAX_DESCONECTADO_MS) {
-                        if (!obterEstadoRele(1)) {
-                            Serial.println(F("[ERROR] Watchdog: Wi-Fi STA desconectado há mais de 1 hora. Reiniciando rádio físico via reboot."));
-                            delay(500);
-                            ESP.restart();
-                        }
+                    Serial.println(F("[WARN] Watchdog: Wi-Fi STA desconectado por interferência/ruído. Iniciando auto-recuperação."));
+                }
+
+                // Tentativa periódica de auto-recuperação Wi-Fi sem bloquear o loop
+                if (agora - ultimaTentativaReconexaoWifiMs >= INTERVALO_RECONEXAO_WIFI_MS) {
+                    ultimaTentativaReconexaoWifiMs = agora;
+                    Serial.println(F("[INFO] Watchdog: Tentando auto-recuperação suave do Wi-Fi (reconnect)..."));
+                    WiFi.reconnect();
+                }
+
+                // Monitora se o tempo desconectado contínuo ultrapassa o limite de 1 hora
+                if (agora - ultimoWifiDesconectadoMs >= TEMPO_MAX_DESCONECTADO_MS) {
+                    if (!obterEstadoRele(1)) {
+                        Serial.println(F("[ERROR] Watchdog: Wi-Fi STA desconectado há mais de 1 hora. Reiniciando rádio físico via reboot."));
+                        delay(500);
+                        ESP.restart();
                     }
                 }
             }

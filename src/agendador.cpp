@@ -70,6 +70,16 @@ static uint8_t obterPinoDoCanal(uint8_t canal) {
 // Implementações públicas
 // ---------------------------------------------------------------------------
 
+// Variáveis internas para controle de override manual, temporizadores e detecção de transições
+static bool ultimoEstadoAgendado = false;
+static bool manualOverrideActive = false;
+static bool manualOverrideState  = false;
+static unsigned long tempoInicioManualMs = 0; // Armazena timestamp de acionamento manual (RF1.4)
+
+// Variáveis para auto-verificação e proteção contra disparos espúrios por ruído elétrico (RF6.3, ADR-012)
+static uint32_t disparosEspuriosCount = 0;
+static bool estadoAutorizadoAtual = false;
+
 void inicializarReles() {
     // ADR-007: Esta é a primeira ação do setup().
     // Configurar como OUTPUT e forçar LOW antes de qualquer outra
@@ -78,13 +88,22 @@ void inicializarReles() {
 
     pinMode(PINO_RELE_CANAL_1, OUTPUT);
     digitalWrite(PINO_RELE_CANAL_1, LOW);
+    estadoAutorizadoAtual = false;
 }
 
-// Variáveis internas para controle de override manual, temporizadores e detecção de transições
-static bool ultimoEstadoAgendado = false;
-static bool manualOverrideActive = false;
-static bool manualOverrideState  = false;
-static unsigned long tempoInicioManualMs = 0; // Armazena timestamp de acionamento manual (RF1.4)
+uint32_t obterContadorDisparosEspurios() {
+    return disparosEspuriosCount;
+}
+
+void verificarEProtegerEstadoReleFisico() {
+    // Se o pino físico estiver HIGH (ligado), mas o firmware não autorizou este acionamento (RF6.3, CA-08)
+    if (digitalRead(PINO_RELE_CANAL_1) == HIGH && !estadoAutorizadoAtual) {
+        digitalWrite(PINO_RELE_CANAL_1, LOW);
+        disparosEspuriosCount++;
+        Serial.print(F("[ERROR] Disparo espúrio por ruído elétrico detectado no GPIO! Válvula desligada imediatamente. Total de disparos espúrios: "));
+        Serial.println(disparosEspuriosCount);
+    }
+}
 
 static int obterDuracaoEsticada(int duracao) {
     if (duracao <= 10) {
@@ -176,6 +195,7 @@ void controleManual(uint8_t canal, bool estado) {
  * Detecta a transição de desligado para ligado e registra a hora no formato HH:MM (NTP).
  */
 static void setarEstadoReleFisico(bool ligado) {
+    estadoAutorizadoAtual = ligado;
     bool estadoAnterior = (digitalRead(PINO_RELE_CANAL_1) == HIGH);
     
     digitalWrite(PINO_RELE_CANAL_1, ligado ? HIGH : LOW);

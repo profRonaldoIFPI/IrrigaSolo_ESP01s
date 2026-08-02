@@ -105,9 +105,9 @@ void setup() {
     inicializarSensorFluxo();
 
     // -----------------------------------------------------------------------
-    // PASSO 8: MQTT — Inicializar cliente (ADR-010, RF5)
+    // PASSO 8: MQTT — Inicializar cliente (ADR-010, ADR-012, RF5)
     // -----------------------------------------------------------------------
-    inicializarMqtt(configRede);
+    inicializarMqtt(configRede, &configIrrigacao);
 
     // -----------------------------------------------------------------------
     // PASSO 9: Servidor Web HTTP (última inicialização)
@@ -129,6 +129,9 @@ void setup() {
 // ---------------------------------------------------------------------------
 
 void loop() {
+    // Auto-verificação imediata do pino contra disparos espúrios por ruído elétrico (RF6.3, CA-08)
+    verificarEProtegerEstadoReleFisico();
+
     // Atender requisições HTTP pendentes
     processarRequisicoes();
 

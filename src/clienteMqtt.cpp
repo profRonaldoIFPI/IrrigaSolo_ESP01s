@@ -1,6 +1,7 @@
 #include "clienteMqtt.h"
 #include "agendador.h"
 #include "sensorFluxo.h"
+#include "autovigilancia.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
@@ -9,10 +10,68 @@ static WiFiClient espClient;
 static PubSubClient mqttClient(espClient);
 
 static ConfiguracaoRede configRedeLocal;
+static const ConfiguracaoIrrigacao* ponteiroConfigIrrigacao = nullptr;
+
 static unsigned long ultimaTentativaReconexaoMs = 0;
 static const unsigned long INTERVALO_RECONEXAO_MQTT_MS = 10000;
 
 // A configuração MQTT agora lê os tópicos e Client ID dinamicamente do LittleFS
+
+void registrarConfiguracaoIrrigacaoMqtt(const ConfiguracaoIrrigacao* config) {
+    ponteiroConfigIrrigacao = config;
+}
+
+void publicarStatusReboot() {
+    if (!mqttClient.connected()) {
+        return;
+    }
+
+    char topicoReboot[128];
+    snprintf(topicoReboot, sizeof(topicoReboot), "%s/reboot", configRedeLocal.mqttPublishTopic);
+
+    char payloadJson[256];
+    snprintf(payloadJson, sizeof(payloadJson),
+             "{\"id\":\"%s\",\"motivo_reset\":\"%s\",\"uptime\":%u,\"disparos_espurios\":%u}",
+             configRedeLocal.mqttClientId,
+             obterMotivoReset(),
+             (uint32_t)(millis() / 1000),
+             obterContadorDisparosEspurios());
+
+    bool status = mqttClient.publish(topicoReboot, payloadJson);
+    if (status) {
+        Serial.print(F("[MQTT] Status de Reboot publicado: "));
+        Serial.println(payloadJson);
+    }
+}
+
+void publicarAgendamentos() {
+    if (!mqttClient.connected() || ponteiroConfigIrrigacao == nullptr) {
+        return;
+    }
+
+    char topicoAgendamentos[128];
+    snprintf(topicoAgendamentos, sizeof(topicoAgendamentos), "%s/agendamentos", configRedeLocal.mqttPublishTopic);
+
+    char payloadJson[512];
+    int pos = snprintf(payloadJson, sizeof(payloadJson), "{\"id\":\"%s\",\"sessoes\":[", configRedeLocal.mqttClientId);
+
+    for (uint8_t i = 0; i < MAX_SESSOES_POR_CANAL; i++) {
+        const SessaoIrrigacao& s = ponteiroConfigIrrigacao->canal1[i];
+        pos += snprintf(payloadJson + pos, sizeof(payloadJson) - pos,
+                        "{\"habilitada\":%s,\"inicio\":\"%s\",\"duracao\":%d}%s",
+                        s.habilitada ? "true" : "false",
+                        s.inicio,
+                        s.duracao,
+                        (i < MAX_SESSOES_POR_CANAL - 1) ? "," : "");
+    }
+    snprintf(payloadJson + pos, sizeof(payloadJson) - pos, "]}");
+
+    bool status = mqttClient.publish(topicoAgendamentos, payloadJson);
+    if (status) {
+        Serial.print(F("[MQTT] Agendamentos publicados: "));
+        Serial.println(payloadJson);
+    }
+}
 
 /**
  * Função de callback interna. Chamada pela PubSubClient quando chega
@@ -20,7 +79,7 @@ static const unsigned long INTERVALO_RECONEXAO_MQTT_MS = 10000;
  */
 static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
     // Converter o payload binário para string com segurança
-    char payloadStr[16];
+    char payloadStr[32];
     unsigned int tamanhoCopiar = length < (sizeof(payloadStr) - 1) ? length : (sizeof(payloadStr) - 1);
     memcpy(payloadStr, payload, tamanhoCopiar);
     payloadStr[tamanhoCopiar] = '\0';
@@ -37,11 +96,14 @@ static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
         controleManual(1, false);
     } else if (strcmp(payloadStr, "ZERAR") == 0) {
         zerarVolumeTotal();
+    } else if (strcmp(payloadStr, "AGENDAMENTOS") == 0 || strcmp(payloadStr, "OBTER_AGENDAMENTOS") == 0) {
+        publicarAgendamentos();
     }
 }
 
-void inicializarMqtt(const ConfiguracaoRede& config) {
+void inicializarMqtt(const ConfiguracaoRede& config, const ConfiguracaoIrrigacao* configIrrigacao) {
     configRedeLocal = config;
+    ponteiroConfigIrrigacao = configIrrigacao;
 
     mqttClient.setServer(configRedeLocal.mqttBroker, configRedeLocal.mqttPort);
     mqttClient.setCallback(callbackMqtt);
@@ -77,6 +139,11 @@ static bool tentarConectarMqtt() {
         mqttClient.subscribe(configRedeLocal.mqttSubscribeTopic);
         Serial.print(F("[MQTT] Inscrito no tópico: "));
         Serial.println(configRedeLocal.mqttSubscribeTopic);
+
+        // Publicar nos tópicos dedicados de reboot e agendamentos (RF5.3, CA-09)
+        publicarStatusReboot();
+        publicarAgendamentos();
+
         return true;
     } else {
         Serial.print(F("[MQTT] Falha na conexao. Codigo de erro="));
@@ -109,11 +176,12 @@ void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL,
     uint32_t heapLivre = ESP.getFreeHeap();
     uint32_t tempoOnline = millis() / 1000;
     uint32_t chipId = ESP.getChipId();
+    uint32_t disparosEspurios = obterContadorDisparosEspurios();
 
     // Buffer estático expandido para evitar fragmentação e suportar a carga de telemetria expandida (embedded-constraints.md)
     char payloadJson[512];
     snprintf(payloadJson, sizeof(payloadJson),
-             "{\"id\":\"%s\",\"chip_id\":%u,\"ip\":\"%d.%d.%d.%d\",\"valvula\":\"%s\",\"vazao\":%.2f,\"volume\":%.2f,\"ultima_irrigacao\":\"%s\",\"proxima_irrigacao\":\"%s\",\"uptime\":%u,\"rssi\":%d,\"heap_livre\":%u}",
+             "{\"id\":\"%s\",\"chip_id\":%u,\"ip\":\"%d.%d.%d.%d\",\"valvula\":\"%s\",\"vazao\":%.2f,\"volume\":%.2f,\"ultima_irrigacao\":\"%s\",\"proxima_irrigacao\":\"%s\",\"uptime\":%u,\"rssi\":%d,\"heap_livre\":%u,\"motivo_reset\":\"%s\",\"disparos_espurios\":%u}",
              configRedeLocal.mqttClientId,
              chipId,
              ip[0], ip[1], ip[2], ip[3],
@@ -124,7 +192,9 @@ void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL,
              proximaIrrigacao,
              tempoOnline,
              rssi,
-             heapLivre);
+             heapLivre,
+             obterMotivoReset(),
+             disparosEspurios);
 
     bool statusEnvio = mqttClient.publish(configRedeLocal.mqttPublishTopic, payloadJson);
     if (statusEnvio) {
