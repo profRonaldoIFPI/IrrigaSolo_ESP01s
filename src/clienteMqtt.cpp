@@ -140,9 +140,12 @@ static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
 
 void inicializarMqtt(const ConfiguracaoRede& config, ConfiguracaoIrrigacao* configIrrigacao) {
     configRedeLocal = config;
-    ponteiroConfigIrrigacao = configIrrigacao;
+    if (configIrrigacao != nullptr) {
+        ponteiroConfigIrrigacao = configIrrigacao;
+    }
 
     mqttClient.setServer(configRedeLocal.mqttBroker, configRedeLocal.mqttPort);
+    mqttClient.setBufferSize(512); // CRÍTICO: Expande o buffer de 128B do PubSubClient para 512B
     mqttClient.setCallback(callbackMqtt);
     
     ultimaTentativaReconexaoMs = 0;

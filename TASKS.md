@@ -135,7 +135,11 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Implementar tarefas do FreeRTOS para agendador, autovigilância e proteção anti-ruído no pino do relé
 - [x] Criar documentação didática completa com diagramas Mermaid e comparativo de arquitetura em `migracao/README.md`
 - [x] Garantir arquivos `README.md` obrigatórios em todos os subdiretórios (`/migracao/doc`, `/migracao/include`, `/migracao/src`)
-- [x] Realizar o commit da Etapa 19
+## Etapa 20 — Correção de Publicação MQTT (Buffer PubSubClient & Reinicialização Web)
+- [x] Expandir o buffer interno da biblioteca `PubSubClient` para 512 bytes via `mqttClient.setBufferSize(512)`
+- [x] Preservar o ponteiro de agendamento em `inicializarMqtt()` e passar `ptrConfigIrrigacao` em `servidorWeb.cpp`
+- [x] Validar compilação com `pio run` e comitar a Etapa 20
+
 
 
 

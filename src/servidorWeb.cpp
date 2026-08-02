@@ -322,7 +322,7 @@ static void handleApiPostNetwork() {
     delay(500); // Pequeno delay para garantir que a resposta HTTP foi enviada
     inicializarWifi(*ptrConfigRede);
     inicializarNtp(*ptrConfigRede);
-    inicializarMqtt(*ptrConfigRede);
+    inicializarMqtt(*ptrConfigRede, ptrConfigIrrigacao);
 }
 
 // ---------------------------------------------------------------------------
