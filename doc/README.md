@@ -8,8 +8,8 @@ Este diretório é a **fonte única de verdade** (Single Source of Truth) para o
 
 | Arquivo | Responsabilidade |
 |---|---|
-| [specification.md](specification.md) | Requisitos funcionais (RF1–RF7) e critérios de aceitação (CA-01–CA-06). |
-| [architecture.md](architecture.md) | Registro de Decisões Arquiteturais (ADR-001 a ADR-010). |
+| [specification.md](specification.md) | Requisitos funcionais (RF1–RF7) e critérios de aceitação (CA-01–CA-09). |
+| [architecture.md](architecture.md) | Registro de Decisões Arquiteturais (ADR-001 a ADR-012). |
 
 ## Dependências / Relações
 

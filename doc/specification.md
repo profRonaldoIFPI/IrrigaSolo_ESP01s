@@ -56,14 +56,18 @@ O sistema deve permitir monitoramento e controle através de um broker local ou 
 
 * **RF5.1:** **Publicação de Telemetria:** O dispositivo deve publicar periodicamente, com intervalo configurável via web (padrão: 10 segundos, mínimo de 1s), o estado atual no tópico de publicação configurado via web no formato JSON:
   `{"valvula": "LIGADA"|"DESLIGADA", "vazao": 0.0, "volume": 0.0}`
-* **RF5.2:** **Recepção de Comandos:** O dispositivo deve se inscrever no tópico de assinatura configurado via web e aceitar comandos para ligar/desligar a válvula manualmente (ex: payload `LIGAR` ou `DESLIGAR`) e zerar o volume acumulado (ex: payload `ZERAR`).
+* **RF5.2:** **Recepção de Comandos:** O dispositivo deve se inscrever no tópico de assinatura configurado via web e aceitar comandos para ligar/desligar a válvula manualmente (ex: payload `LIGAR` ou `DESLIGAR`), zerar o volume acumulado (`ZERAR`) e solicitar agendamentos (`AGENDAMENTOS`).
+* **RF5.3:** **Tópicos Dedicados de Reboot e Agendamentos:** O dispositivo deve publicar automaticamente mensagens em tópicos dedicados ao estabelecer a conexão MQTT:
+  - Tópico de Reboot (`<mqttPubTopic>/reboot`): Publica payload JSON com motivo de reinício (`motivo_reset`), uptime anterior e contagem de disparos espúrios.
+  - Tópico de Agendamentos (`<mqttPubTopic>/agendamentos`): Publica payload JSON com as 6 sessões de irrigação cadastradas.
 
 ### RF6 - Resiliência e Tolerância a Falhas
 
-O sistema deve operar de forma segura mesmo em cenários de corrupção de dados.
+O sistema deve operar de forma segura mesmo em cenários de corrupção de dados ou interferências elétricas.
 
 * **RF6.1:** Falha em configurações de rede ou MQTT: Assume valores AP padrão e aguarda intervenção.
 * **RF6.2:** Falha em configurações de irrigação: Mantém o relé desligado, inibe acionamentos automáticos e registra o erro, mantendo a interface web acessível para reconfiguração.
+* **RF6.3:** Proteção Anti-Ruído e Auto-Verificação do Pino da Válvula: O firmware deve verificar continuamente se o estado físico do relé é condizente com as permissões atuais (agendamento ativo ou controle manual). Se um pico de interferência eletromagnética (ruído elétrico) acionar a válvula indevidamente, o sistema deve desligá-la imediatamente (em milissegundos), incrementar o contador de disparos espúrios e registrar o evento.
 
 ### RF7 - Atualização de Firmware Sem Fios (OTA)
 
@@ -81,3 +85,5 @@ O sistema deve permitir a atualização de seu código-fonte remotamente pela re
 * **CA-05:** Alterações de rede, NTP, MQTT e agendamentos sobrevivem a reinicializações físicas do hardware.
 * **CA-06:** O upload de um binário válido na rota `/update` atualiza o firmware de forma automática e reinicia o microcontrolador com a nova versão activa.
 * **CA-07:** O acionamento de regas agendadas com duração maior que 10 minutos executa obrigatoriamente de forma fracionada (5 minutos ligado, 10 minutos desligado), com a janela de execução expandida (esticada) para garantir que a duração configurada seja o tempo real de irrigação (válvula aberta). Qualquer acionamento manual desliga automaticamente após 10 minutos contínuos.
+* **CA-08:** O sistema detecta acionamentos espúrios provocados por ruído elétrico e desliga a válvula imediatamente, mantendo o contador de disparos espúrios atualizado.
+* **CA-09:** Na inicialização e reconexão MQTT, o firmware publica o motivo do reset e a lista de agendamentos nos tópicos `<mqttPubTopic>/reboot` e `<mqttPubTopic>/agendamentos`.

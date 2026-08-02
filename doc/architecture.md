@@ -157,3 +157,18 @@ Para proteger fisicamente a válvula solenoide (tipo máquina de lavar roupas) c
 ### Motivação
 Essas válvulas solenoides residenciais não são projetadas para regime de operação contínuo longo e podem queimar por dissipação térmica inadequada. A implementação desse recurso no nível do firmware impede falhas de hardware no mundo físico.
 
+---
+
+# ADR-012 - Autovigilância Anti-Ruído, Diagnóstico de Boot e Tópicos MQTT Específicos
+
+### Decisão
+1. **Auto-verificação Anti-Ruído (Hardware Safety Check):** O motor de agendamento inspeciona o estado lógico do pino GPIO 5 (D1). Caso o pino físico seja encontrado em `HIGH` sem autorização explícita (sem agendamento ativo e sem override manual), o firmware desliga o pino instantaneamente (`LOW`), incrementa o contador de disparos espúrios e gera logs de alerta.
+2. **Diagnóstico de Boot e Tópicos MQTT Dedicados:**
+   - Na inicialização e reconexão MQTT, o sistema publica a razão de reset de hardware (`ESP.getResetReason()`), tempo online e disparos espúrios no tópico `<mqttPubTopic>/reboot`.
+   - O sistema publica as 6 sessões de irrigação ativas no tópico `<mqttPubTopic>/agendamentos` e responde ao comando `AGENDAMENTOS`.
+   - As métricas `motivo_reset` e `disparos_espurios` são integradas no payload JSON de telemetria geral.
+
+### Motivação
+Equipamentos eletrodomésticos de alta potência (como compressores de ar-condicionado) induzem ruído eletromagnético e surtos na rede elétrica que podem comutar transistores de relés ou causar flutuações de GPIO. A verificação ativa contínua garante proteção de hardware com tempo de resposta em milissegundos. A telemetria dedicada permite rastreabilidade remota de reinicializações e falhas da rede elétrica.
+
+

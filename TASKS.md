@@ -111,6 +111,16 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Atualizar `obterUltimaIrrigacao` para priorizar o valor registrado em RAM
 - [x] Validar compilação e comitar a Etapa 15
 
+## Etapa 16 — Proteção Anti-Ruído, Telemetria de Boot e Tópicos MQTT (Reboot e Agendamentos)
+- [x] Atualizar a documentação de especificação e arquitetura em `/doc` com RF5.3, RF6.3 e ADR-012
+- [ ] Implementar auto-verificação do pino do relé e contador de disparos espúrios em `agendador.h` e `agendador.cpp`
+- [ ] Registrar motivo de reset de hardware e auto-recuperação Wi-Fi em `autovigilancia.h` e `autovigilancia.cpp`
+- [ ] Implementar tópicos MQTT dedicados de reboot e agendamentos em `clienteMqtt.h` e `clienteMqtt.cpp`
+- [ ] Integrar fluxo no Super Loop em `main.cpp`
+- [ ] Atualizar documentação dos diretórios `src/README.md` e `include/README.md`
+- [ ] Validar compilação e realizar os commits de cada sub-etapa
+
+
 
 
 
