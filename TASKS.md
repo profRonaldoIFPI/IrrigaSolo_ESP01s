@@ -128,6 +128,16 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Exibir a versão atual no card de Atualização de Firmware (OTA) em `include/templates/config.html`
 - [x] Validar compilação com `pio run` e comitar a Etapa 18
 
+## Etapa 19 — Estrutura de Migração Didática para ESP-IDF & FreeRTOS (`/migracao`)
+- [x] Criar estrutura de projeto PlatformIO para ESP-IDF (`framework = espidf`, `board = esp32dev`)
+- [x] Criar `CMakeLists.txt` raiz e no componente `src`
+- [x] Implementar ponto de entrada `app_main()` em `migracao/src/main.c`
+- [x] Implementar tarefas do FreeRTOS para agendador, autovigilância e proteção anti-ruído no pino do relé
+- [x] Criar documentação didática completa com diagramas Mermaid e comparativo de arquitetura em `migracao/README.md`
+- [x] Garantir arquivos `README.md` obrigatórios em todos os subdiretórios (`/migracao/doc`, `/migracao/include`, `/migracao/src`)
+- [x] Realizar o commit da Etapa 19
+
+
 
 
 
