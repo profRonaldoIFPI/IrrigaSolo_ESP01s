@@ -2,22 +2,24 @@
 #include "agendador.h"
 #include "sensorFluxo.h"
 #include "autovigilancia.h"
+#include "persistencia.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 // Instâncias globais locais do módulo
 static WiFiClient espClient;
 static PubSubClient mqttClient(espClient);
 
 static ConfiguracaoRede configRedeLocal;
-static const ConfiguracaoIrrigacao* ponteiroConfigIrrigacao = nullptr;
+static ConfiguracaoIrrigacao* ponteiroConfigIrrigacao = nullptr;
 
 static unsigned long ultimaTentativaReconexaoMs = 0;
 static const unsigned long INTERVALO_RECONEXAO_MQTT_MS = 10000;
 
 // A configuração MQTT agora lê os tópicos e Client ID dinamicamente do LittleFS
 
-void registrarConfiguracaoIrrigacaoMqtt(const ConfiguracaoIrrigacao* config) {
+void registrarConfiguracaoIrrigacaoMqtt(ConfiguracaoIrrigacao* config) {
     ponteiroConfigIrrigacao = config;
 }
 
@@ -78,8 +80,8 @@ void publicarAgendamentos() {
  * uma mensagem nos tópicos inscritos (ex: comando).
  */
 static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
-    // Converter o payload binário para string com segurança
-    char payloadStr[32];
+    // Converter o payload binário para string com segurança (buffer expandido para suportar JSON)
+    char payloadStr[256];
     unsigned int tamanhoCopiar = length < (sizeof(payloadStr) - 1) ? length : (sizeof(payloadStr) - 1);
     memcpy(payloadStr, payload, tamanhoCopiar);
     payloadStr[tamanhoCopiar] = '\0';
@@ -89,7 +91,38 @@ static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
     Serial.print(F("]: "));
     Serial.println(payloadStr);
 
-    // Processamento de comandos (RF5.2)
+    // 1. Processar payload se for um JSON de agendamento de irrigação (RF5.2)
+    if (payloadStr[0] == '{') {
+        JsonDocument doc;
+        DeserializationError erro = deserializeJson(doc, payloadStr);
+        if (!erro) {
+            if (doc["inicio"].is<const char*>() && doc["duracao"].is<int>()) {
+                uint8_t sessaoIndex = doc["sessao"] | 0;
+                if (sessaoIndex < MAX_SESSOES_POR_CANAL && ponteiroConfigIrrigacao != nullptr) {
+                    SessaoIrrigacao& s = ponteiroConfigIrrigacao->canal1[sessaoIndex];
+                    s.habilitada = doc["habilitada"] | true;
+                    strlcpy(s.inicio, doc["inicio"].as<const char*>(), sizeof(s.inicio));
+                    s.duracao = (uint8_t)doc["duracao"].as<int>();
+
+                    // Persistir a nova configuração no LittleFS (/irrigation.json)
+                    salvarConfiguracaoIrrigacao(*ponteiroConfigIrrigacao);
+
+                    Serial.print(F("[MQTT] Agendamento atualizado via JSON para sessão "));
+                    Serial.print(sessaoIndex);
+                    Serial.println(F(" e salvo no LittleFS!"));
+
+                    // Confirmar enviando a lista atualizada de agendamentos
+                    publicarAgendamentos();
+                    return;
+                }
+            }
+        } else {
+            Serial.print(F("[MQTT] Erro ao decodificar JSON de agendamento: "));
+            Serial.println(erro.c_str());
+        }
+    }
+
+    // 2. Processamento de comandos de texto legíveis (RF5.2)
     if (strcmp(payloadStr, "LIGAR") == 0) {
         controleManual(1, true);
     } else if (strcmp(payloadStr, "DESLIGAR") == 0) {
@@ -101,7 +134,7 @@ static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
     }
 }
 
-void inicializarMqtt(const ConfiguracaoRede& config, const ConfiguracaoIrrigacao* configIrrigacao) {
+void inicializarMqtt(const ConfiguracaoRede& config, ConfiguracaoIrrigacao* configIrrigacao) {
     configRedeLocal = config;
     ponteiroConfigIrrigacao = configIrrigacao;
 
@@ -135,10 +168,17 @@ static bool tentarConectarMqtt() {
 
     if (conectado) {
         Serial.println(F("[MQTT] Conectado ao Broker!"));
-        // Increver no tópico de comandos customizado (RF5.2)
+        // Inscrever no tópico de comandos customizado (RF5.2)
         mqttClient.subscribe(configRedeLocal.mqttSubscribeTopic);
-        Serial.print(F("[MQTT] Inscrito no tópico: "));
+        Serial.print(F("[MQTT] Inscrito no tópico de comandos: "));
         Serial.println(configRedeLocal.mqttSubscribeTopic);
+
+        // Inscrever no tópico de agendamento dedicado <mqttSubTopic>/agendar
+        char topicoInscricaoAgendar[128];
+        snprintf(topicoInscricaoAgendar, sizeof(topicoInscricaoAgendar), "%s/agendar", configRedeLocal.mqttSubscribeTopic);
+        mqttClient.subscribe(topicoInscricaoAgendar);
+        Serial.print(F("[MQTT] Inscrito no tópico de agendar: "));
+        Serial.println(topicoInscricaoAgendar);
 
         // Publicar nos tópicos dedicados de reboot e agendamentos (RF5.3, CA-09)
         publicarStatusReboot();

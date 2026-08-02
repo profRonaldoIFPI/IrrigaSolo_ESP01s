@@ -163,9 +163,10 @@ Essas válvulas solenoides residenciais não são projetadas para regime de oper
 
 ### Decisão
 1. **Auto-verificação Anti-Ruído (Hardware Safety Check):** O motor de agendamento inspeciona o estado lógico do pino GPIO 5 (D1). Caso o pino físico seja encontrado em `HIGH` sem autorização explícita (sem agendamento ativo e sem override manual), o firmware desliga o pino instantaneamente (`LOW`), incrementa o contador de disparos espúrios e gera logs de alerta.
-2. **Diagnóstico de Boot e Tópicos MQTT Dedicados:**
+2. **Diagnóstico de Boot, Agendamento via JSON e Tópicos MQTT Dedicados:**
    - Na inicialização e reconexão MQTT, o sistema publica a razão de reset de hardware (`ESP.getResetReason()`), tempo online e disparos espúrios no tópico `<mqttPubTopic>/reboot`.
    - O sistema publica as 6 sessões de irrigação ativas no tópico `<mqttPubTopic>/agendamentos` e responde ao comando `AGENDAMENTOS`.
+   - O sistema permite o cadastramento de novos agendamentos via payload JSON (ex: `{"sessao":0,"habilitada":true,"inicio":"06:30","duracao":15}`) no tópico de assinatura ou `<mqttSubTopic>/agendar`, persistindo os dados imediatamente no LittleFS.
    - As métricas `motivo_reset` e `disparos_espurios` são integradas no payload JSON de telemetria geral.
 
 ### Motivação

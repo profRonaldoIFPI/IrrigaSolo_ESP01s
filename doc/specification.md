@@ -56,10 +56,11 @@ O sistema deve permitir monitoramento e controle através de um broker local ou 
 
 * **RF5.1:** **Publicação de Telemetria:** O dispositivo deve publicar periodicamente, com intervalo configurável via web (padrão: 10 segundos, mínimo de 1s), o estado atual no tópico de publicação configurado via web no formato JSON:
   `{"valvula": "LIGADA"|"DESLIGADA", "vazao": 0.0, "volume": 0.0}`
-* **RF5.2:** **Recepção de Comandos:** O dispositivo deve se inscrever no tópico de assinatura configurado via web e aceitar comandos para ligar/desligar a válvula manualmente (ex: payload `LIGAR` ou `DESLIGAR`), zerar o volume acumulado (`ZERAR`) e solicitar agendamentos (`AGENDAMENTOS`).
-* **RF5.3:** **Tópicos Dedicados de Reboot e Agendamentos:** O dispositivo deve publicar automaticamente mensagens em tópicos dedicados ao estabelecer a conexão MQTT:
+* **RF5.2:** **Recepção de Comandos e Agendamentos via MQTT:** O dispositivo deve se inscrever no tópico de assinatura configurado via web e aceitar comandos para ligar/desligar a válvula manualmente (ex: payload `LIGAR` ou `DESLIGAR`), zerar o volume acumulado (`ZERAR`), solicitar agendamentos (`AGENDAMENTOS`) e **cadastrar/atualizar agendamentos via payload JSON** (ex: `{"sessao":0, "habilitada":true, "inicio":"06:30", "duracao":15}`). Ao receber um novo agendamento via MQTT, o firmware deve atualizar a estrutura em memória, persistir a alteração no LittleFS (`/irrigation.json`) e publicar a confirmação.
+* **RF5.3:** **Tópicos Dedicados de Reboot, Agendamentos e Inscrição de Agendar:** O dispositivo deve publicar automaticamente mensagens em tópicos dedicados ao estabelecer a conexão MQTT:
   - Tópico de Reboot (`<mqttPubTopic>/reboot`): Publica payload JSON com motivo de reinício (`motivo_reset`), uptime anterior e contagem de disparos espúrios.
   - Tópico de Agendamentos (`<mqttPubTopic>/agendamentos`): Publica payload JSON com as 6 sessões de irrigação cadastradas.
+  - Tópico de Inscrição de Agendamento (`<mqttSubTopic>/agendar`): Opcional/dedicado para receber agendamentos via JSON.
 
 ### RF6 - Resiliência e Tolerância a Falhas
 

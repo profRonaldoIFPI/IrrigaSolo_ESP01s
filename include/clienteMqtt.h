@@ -18,16 +18,16 @@
  * e define a função de callback para recebimento de comandos.
  *
  * @param config Referência para a struct de configuração de rede contendo os dados do Broker.
- * @param configIrrigacao Ponteiro opcional para a struct de agendamentos de irrigação.
+ * @param configIrrigacao Ponteiro opcional para a struct de agendamentos de irrigação (permite gravação via MQTT).
  */
-void inicializarMqtt(const ConfiguracaoRede& config, const ConfiguracaoIrrigacao* configIrrigacao = nullptr);
+void inicializarMqtt(const ConfiguracaoRede& config, ConfiguracaoIrrigacao* configIrrigacao = nullptr);
 
 /**
  * Registra o ponteiro da configuração de agendamentos de irrigação no módulo MQTT.
  *
- * @param config Ponteiro para a estrutura de agendamentos de irrigação.
+ * @param config Ponteiro para a estrutura de agendamentos de irrigação (editável).
  */
-void registrarConfiguracaoIrrigacaoMqtt(const ConfiguracaoIrrigacao* config);
+void registrarConfiguracaoIrrigacaoMqtt(ConfiguracaoIrrigacao* config);
 
 /**
  * Mantém a conexão ativa com o Broker MQTT e processa a fila de mensagens recebidas.

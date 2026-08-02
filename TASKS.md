@@ -118,7 +118,12 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Implementar tópicos MQTT dedicados de reboot e agendamentos em `clienteMqtt.h` e `clienteMqtt.cpp`
 - [x] Integrar fluxo no Super Loop em `main.cpp`
 - [x] Atualizar documentação dos diretórios `src/README.md` e `include/README.md`
-- [x] Validar compilação e realizar os commits de cada sub-etapa
+## Etapa 17 — Cadastramento de Agendamentos de Irrigação via MQTT (Payload JSON)
+- [x] Atualizar requisitos RF5.2, RF5.3 e ADR-012 em `/doc`
+- [x] Implementar parser JSON de agendamento em `clienteMqtt.cpp` e inscrição no tópico `<mqttSubTopic>/agendar`
+- [x] Persistir os novos agendamentos recebidos via MQTT no LittleFS (`/irrigation.json`)
+- [x] Validar compilação com `pio run` e comitar a Etapa 17
+
 
 
 
