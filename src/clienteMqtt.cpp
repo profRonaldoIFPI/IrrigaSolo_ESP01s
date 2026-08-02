@@ -131,6 +131,10 @@ static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
         zerarVolumeTotal();
     } else if (strcmp(payloadStr, "AGENDAMENTOS") == 0 || strcmp(payloadStr, "OBTER_AGENDAMENTOS") == 0) {
         publicarAgendamentos();
+    } else if (strcmp(payloadStr, "REBOOT") == 0 || strcmp(payloadStr, "RESET") == 0) {
+        Serial.println(F("[MQTT] Comando de REBOOT recebido via MQTT! Reiniciando dispositivo..."));
+        delay(500); // Aguarda esvaziar buffer serial e mensagens pendentes
+        ESP.restart();
     }
 }
 
@@ -179,6 +183,13 @@ static bool tentarConectarMqtt() {
         mqttClient.subscribe(topicoInscricaoAgendar);
         Serial.print(F("[MQTT] Inscrito no tópico de agendar: "));
         Serial.println(topicoInscricaoAgendar);
+
+        // Inscrever no tópico de reboot dedicado <mqttSubTopic>/reboot
+        char topicoInscricaoReboot[128];
+        snprintf(topicoInscricaoReboot, sizeof(topicoInscricaoReboot), "%s/reboot", configRedeLocal.mqttSubscribeTopic);
+        mqttClient.subscribe(topicoInscricaoReboot);
+        Serial.print(F("[MQTT] Inscrito no tópico de reboot: "));
+        Serial.println(topicoInscricaoReboot);
 
         // Publicar nos tópicos dedicados de reboot e agendamentos (RF5.3, CA-09)
         publicarStatusReboot();
