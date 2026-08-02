@@ -74,14 +74,15 @@ static void handlePaginaConfig() {
 static void handleApiStatus() {
     JsonDocument documento;
 
-    documento["time"]          = obterHoraFormatada();
-    documento["date"]          = obterDataFormatada();
-    documento["wifiConnected"] = estaConectadoSta();
-    documento["ip"]            = obterIpAtual();
-    documento["mqttConnected"] = obterEstadoConexaoMqtt();
-    documento["c1State"]       = obterEstadoRele(1);
-    documento["vazao"]         = obterVazaoLMin();
-    documento["volume"]        = obterVolumeTotalL();
+    documento["time"]            = obterHoraFormatada();
+    documento["date"]            = obterDataFormatada();
+    documento["wifiConnected"]   = estaConectadoSta();
+    documento["ip"]              = obterIpAtual();
+    documento["mqttConnected"]   = obterEstadoConexaoMqtt();
+    documento["c1State"]         = obterEstadoRele(1);
+    documento["vazao"]           = obterVazaoLMin();
+    documento["volume"]          = obterVolumeTotalL();
+    documento["firmwareVersion"] = VERSAO_FIRMWARE;
 
     char buffer[384];
     serializeJson(documento, buffer, sizeof(buffer));
@@ -232,6 +233,7 @@ static void handleApiGetNetwork() {
     documento["mqttPubTopic"]    = ptrConfigRede->mqttPublishTopic;
     documento["mqttSubTopic"]    = ptrConfigRede->mqttSubscribeTopic;
     documento["mqttInterval"]    = ptrConfigRede->mqttInterval;
+    documento["firmwareVersion"] = VERSAO_FIRMWARE;
 
     char buffer[384];
     serializeJson(documento, buffer, sizeof(buffer));

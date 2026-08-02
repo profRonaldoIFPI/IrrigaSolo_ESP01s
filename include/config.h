@@ -533,7 +533,10 @@ const char config_html[] PROGMEM = R"rawliteral(
 
         <!-- Atualização de Firmware (OTA) -->
         <div class="card" id="card_config_ota">
-            <h2>Atualização de Firmware (OTA)</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h2 style="margin-bottom: 0;">Atualização de Firmware (OTA)</h2>
+                <span class="form-hint" style="margin-top: 0; font-size: 0.85rem; font-weight: 500;">Versão Atual: <strong id="versao_firmware_ota" style="color: var(--primary);">--</strong></span>
+            </div>
             <form method="POST" action="/update" enctype="multipart/form-data" id="form_ota">
                 <div class="form-group">
                     <label for="arquivo_ota">Selecione o arquivo firmware.bin</label>
@@ -581,6 +584,10 @@ const char config_html[] PROGMEM = R"rawliteral(
                     document.getElementById('campo_mqtt_pub_topic').value = dados.mqttPubTopic || '';
                     document.getElementById('campo_mqtt_sub_topic').value = dados.mqttSubTopic || '';
                     document.getElementById('campo_mqtt_interval').value = dados.mqttInterval || 10;
+
+                    if (dados.firmwareVersion) {
+                        document.getElementById('versao_firmware_ota').innerText = dados.firmwareVersion;
+                    }
                 })
                 .catch(function (erro) { console.error('Erro ao carregar config de rede:', erro); });
         }

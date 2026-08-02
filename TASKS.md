@@ -122,7 +122,12 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Atualizar requisitos RF5.2, RF5.3 e ADR-012 em `/doc`
 - [x] Implementar parser JSON de agendamento em `clienteMqtt.cpp` e inscrição no tópico `<mqttSubTopic>/agendar`
 - [x] Persistir os novos agendamentos recebidos via MQTT no LittleFS (`/irrigation.json`)
-- [x] Validar compilação com `pio run` e comitar a Etapa 17
+## Etapa 18 — Exibição da Versão do Firmware no Card OTA (Interface Web)
+- [x] Criar constante `VERSAO_FIRMWARE` em `include/pinosHardware.h`
+- [x] Retornar `firmwareVersion` nos endpoints de API `/api/status` e `/api/network` em `servidorWeb.cpp`
+- [x] Exibir a versão atual no card de Atualização de Firmware (OTA) em `include/templates/config.html`
+- [x] Validar compilação com `pio run` e comitar a Etapa 18
+
 
 
 

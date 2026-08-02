@@ -97,3 +97,9 @@ static const uint32_t INTERVALO_LED_AP_MS = 500;
 // Velocidade da porta Serial para telemetria (ADR-008)
 // ---------------------------------------------------------------------------
 static const uint32_t VELOCIDADE_SERIAL = 115200;
+
+// ---------------------------------------------------------------------------
+// Versão do Firmware IrrigaSolo
+// ---------------------------------------------------------------------------
+static const char VERSAO_FIRMWARE[] = "v1.2";
+
