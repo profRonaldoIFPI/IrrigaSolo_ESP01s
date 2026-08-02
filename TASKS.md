@@ -138,7 +138,12 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 ## Etapa 20 — Correção de Publicação MQTT (Buffer PubSubClient & Reinicialização Web)
 - [x] Expandir o buffer interno da biblioteca `PubSubClient` para 512 bytes via `mqttClient.setBufferSize(512)`
 - [x] Preservar o ponteiro de agendamento em `inicializarMqtt()` e passar `ptrConfigIrrigacao` em `servidorWeb.cpp`
-- [x] Validar compilação com `pio run` e comitar a Etapa 20
+## Etapa 21 — Rotina de Auto-Reconexão Wi-Fi STA Não-Bloqueante (Reboot do Roteador)
+- [x] Atualizar especificação (RF2.3) e registrar ADR-013 em `/doc`
+- [x] Implementar modo dual `WIFI_AP_STA` e ciclo de reconexão a cada 20s em `src/redeWifi.cpp`
+- [x] Desativar o AP de fallback e restaurar estado estrito STA quando o roteador volta a operar
+- [x] Validar compilação com `pio run` e comitar a Etapa 21
+
 
 
 

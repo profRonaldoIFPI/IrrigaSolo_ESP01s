@@ -32,7 +32,7 @@ O dispositivo deve gerenciar sua conexão Wi-Fi de forma autônoma.
 
 * **RF2.1:** Na ausência de rede conhecida, opera em modo Access Point (SSID padrão: `IrrigaSolo`, Senha: `admin123`) e exibe um Portal Cativo para configuração.
 * **RF2.2:** A interface inicial deve coletar: SSID e Senha da rede local, URL do servidor NTP (padrão `pool.ntp.br`), Fuso Horário, Intervalo de Sincronização e os parâmetros de conexão MQTT (Broker, Porta, Usuário, Senha, Client ID, Tópico de Publicação, Tópico de Assinatura e Intervalo de Publicação).
-* **RF2.3:** Em caso de perda de conexão STA (rede local indisponível), o sistema deve acionar fallback para o modo AP, permitindo nova configuração sem interromper os agendamentos já carregados.
+* **RF2.3:** Em caso de perda de conexão STA (rede local indisponível/reboot do roteador), o sistema deve acionar o fallback para o modo dual/AP (permitindo reconfiguração sem interromper os agendamentos), mantendo tentativas periódicas não-bloqueantes de reconexão ao SSID configurado a cada 20 segundos. Assim que a rede for restaurada, o dispositivo retorna automaticamente ao modo STA pleno.
 
 ### RF3 - Medição de Fluxo de Água
 

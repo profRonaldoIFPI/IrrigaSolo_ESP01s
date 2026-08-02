@@ -172,4 +172,17 @@ Essas válvulas solenoides residenciais não são projetadas para regime de oper
 ### Motivação
 Equipamentos eletrodomésticos de alta potência (como compressores de ar-condicionado) induzem ruído eletromagnético e surtos na rede elétrica que podem comutar transistores de relés ou causar flutuações de GPIO. A verificação ativa contínua garante proteção de hardware com tempo de resposta em milissegundos. A telemetria dedicada permite rastreabilidade remota de reinicializações e falhas da rede elétrica.
 
+---
+
+# ADR-013 - Auto-Recuperação Periódica de Conexão Wi-Fi STA em Modo AP/Dual Mode
+
+### Decisão
+Em caso de perda da conexão com o roteador local (modo STA desconectado por reboot do roteador ou indisponibilidade da rede):
+1. O firmware ativa o modo dual/AP de fallback (`WIFI_AP_STA`), garantindo que o Access Point local (`192.168.4.1`) permaneça acessível para reconfigurações do usuário.
+2. O sistema executa chamadas de reconexão não-bloqueantes (`WiFi.begin(...)`) periodicamente a cada 20 segundos via controle de tempo `millis()`, sem congelar a CPU, o servidor web ou o motor de irrigação.
+3. Assim que a rede do roteador for restaurada (`WiFi.status() == WL_CONNECTED`), o dispositivo desativa o AP de fallback, retorna ao modo estrito `WIFI_STA`, restaura o LED de status para aceso fixo e re-estabelece automaticamente a sincronização NTP e o cliente MQTT.
+
+### Motivação
+Impedir que reinícios rotineiros do roteador Wi-Fi prendam o dispositivo permanentemente no modo AP, garantindo auto-recuperação autônoma sem necessidade de intervenção humana ou reset elétrico.
+
 
