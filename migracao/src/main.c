@@ -1,10 +1,10 @@
 /**
- * main.c — Ponto de Entrada da Migração IrrigaSolo em ESP-IDF
+ * main.c — Ponto de Entrada da Migração IrrigaSolo em ESP8266 RTOS SDK
  *
- * Demonstra a arquitetura profissional nativa do ESP-IDF no ESP32:
+ * Demonstra a arquitetura profissional nativa baseada no ESP8266_RTOS_SDK (FreeRTOS) no NodeMCU ESP-12E:
  *   1. Inicialização de NVS (Non-Volatile Storage)
  *   2. Segurança de hardware inicial (GPIO LOW imediato no boot)
- *   3. Criação e escalonamento de tarefas do FreeRTOS
+ *   3. Criação e escalonamento de tarefas do FreeRTOS (xTaskCreate)
  *
  * Idioma: Português
  * Convenções: camelCase para funções/variáveis, SCREAMING_SNAKE_CASE para constantes.
@@ -26,7 +26,7 @@
 #include "sensorFluxo.h"
 #include "clienteMqtt.h"
 
-static const char *TAG = "MAIN_IDF";
+static const char *TAG = "MAIN_RTOS";
 
 // Configurações globais do sistema
 static ConfiguracaoRede configRede;
@@ -34,13 +34,13 @@ static ConfiguracaoIrrigacao configIrrigacao;
 
 void app_main(void) {
     ESP_LOGI(TAG, "========================================");
-    ESP_LOGI(TAG, "  IrrigaSolo ESP-IDF (%s) — Boot", VERSAO_FIRMWARE_IDF);
+    ESP_LOGI(TAG, "  IrrigaSolo ESP8266 RTOS SDK (%s) — Boot", VERSAO_FIRMWARE_IDF);
     ESP_LOGI(TAG, "========================================");
 
     // 1. Segurança de Hardware Imediata — GPIO 5 LOW no primeiro milissegundo
     inicializarRelesIdf();
 
-    // 2. Inicialização da memória NVS Flash do ESP32
+    // 2. Inicialização da memória NVS Flash
     esp_err_t retornoNvs = nvs_flash_init();
     if (retornoNvs == ESP_ERR_NVS_NO_FREE_PAGES || retornoNvs == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
@@ -52,31 +52,29 @@ void app_main(void) {
     // 3. Inicializar módulo de autovigilância e diagnóstico de reset
     inicializarAutovigilanciaIdf();
 
-    // 4. Criar Tarefa do Agendador no FreeRTOS (Core 1, Prioridade 5, 4KB Stack)
-    xTaskCreatePinnedToCore(
+    // 4. Criar Tarefa do Agendador no FreeRTOS (Prioridade 5, 2KB Stack)
+    xTaskCreate(
         tarefaAgendadorIdf,
         "tarefaAgendador",
-        4096,
+        2048,
         &configIrrigacao,
         5,
-        NULL,
-        1
+        NULL
     );
-    ESP_LOGI(TAG, "[FreeRTOS] Tarefa do Agendador criada no Core 1.");
+    ESP_LOGI(TAG, "[FreeRTOS] Tarefa do Agendador criada.");
 
-    // 5. Criar Tarefa de Autovigilância no FreeRTOS (Core 1, Prioridade 2, 3KB Stack)
-    xTaskCreatePinnedToCore(
+    // 5. Criar Tarefa de Autovigilância no FreeRTOS (Prioridade 2, 2KB Stack)
+    xTaskCreate(
         tarefaAutovigilanciaIdf,
         "tarefaAutovigilancia",
-        3072,
+        2048,
         NULL,
         2,
-        NULL,
-        1
+        NULL
     );
-    ESP_LOGI(TAG, "[FreeRTOS] Tarefa de Autovigilância criada no Core 1.");
+    ESP_LOGI(TAG, "[FreeRTOS] Tarefa de Autovigilância criada.");
 
     ESP_LOGI(TAG, "========================================");
-    ESP_LOGI(TAG, "  IrrigaSolo ESP-IDF pronto e operacional!");
+    ESP_LOGI(TAG, "  IrrigaSolo ESP8266 RTOS SDK pronto e operacional!");
     ESP_LOGI(TAG, "========================================");
 }
