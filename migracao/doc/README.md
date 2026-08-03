@@ -1,19 +1,21 @@
-# Diretório `/migracao/doc` — Arquitetura ESP-IDF e Decisões Técnicas
+# Diretório `/migracao/doc` — Documentação do Projeto ESP8266 RTOS SDK / ESP-IDF
 
 ## Objetivo
 
-Este diretório armazena a documentação arquitetural da migração do sistema IrrigaSolo para a plataforma **ESP-IDF** com **FreeRTOS**.
+Este diretório contém a especificação funcional e o Registro de Decisões Arquiteturais (ADR) para a versão do **IrrigaSolo** construída nativamente sobre o **ESP8266 RTOS SDK** (FreeRTOS) e **ESP-IDF** no microcontrolador NodeMCU ESP-12E v0.9.
 
 ## Conteúdo
 
 | Arquivo | Responsabilidade |
 |---|---|
-| [architecture_idf.md](architecture_idf.md) | Registro de Decisões Arquiteturais (ADR-IDF) para a implementação em ESP-IDF. |
+| [specification.md](specification.md) | Especificação de Requisitos Funcionais (RF), Hardware e Critérios de Aceitação (CA). |
+| [architecture.md](architecture.md) | Registro de Decisões Arquiteturais (ADR-IDF) da aplicação baseada em FreeRTOS. |
 
-## Relação de Dependências
+## Relação entre Especificação e Código
 
 ```mermaid
 flowchart TD
-    DOC["📄 architecture_idf.md"] -->|Define Tasks e Alocação| CODE["💻 /migracao/src + /migracao/include"]
-    CODE -->|Respeita| RTOS["⚙️ FreeRTOS Scheduler"]
+    SPEC["📄 specification.md (Requisitos)"] --> ARCH["📄 architecture.md (Decisões ADR)"]
+    ARCH --> CODE["💻 /migracao/src + /migracao/include"]
+    CODE --> RTOS["⚙️ FreeRTOS Scheduler (app_main)"]
 ```
