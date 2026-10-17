@@ -202,6 +202,17 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Compilar e validar a integridade do binário `firmware.bin` com cabeçalho DOUT (`0x03`)
 - [x] Validar e comitar a Etapa 31
 
+---
+
+## Backlog / Tarefas Futuras — Investigação de Hardware e Estabilidade Elétrica
+- [ ] **Investigar travamento e desconexão ocasional do ESP-01S no acionamento do relé via MQTT (fonte HI-LINK 5V 1A):**
+  - [ ] Avaliar interferência eletromagnética (EMI/campo indutivo) da bobina do relé e da carga indutiva (válvula solenoide) sobre a antena PCB do ESP-01S (proximidade física extrema no soquete).
+  - [ ] Analisar transientes de tensão (*voltage sag* / ripple) na linha de 3.3V quando o relé é ativado no exato instante em que o rádio Wi-Fi está respondendo pacotes TCP/MQTT.
+  - [ ] Testar adição de capacitores de desacoplamento (ex: 470µF de baixo ESR na entrada 5V e 100µF no barramento 3.3V do ESP-01S).
+  - [ ] Avaliar necessidade de circuito snubber RC ou diodo flyback/supressor de transientes (TVS/MOV) na carga da válvula solenoide.
+  - [ ] Avaliar desacoplamento de software: agendar o acionamento físico do relé via flag assíncrona no Super Loop em vez de executar o `digitalWrite` imediatamente no contexto síncrono da callback `callbackMqtt`.
+
+
 
 
 

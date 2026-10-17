@@ -346,4 +346,24 @@ Abaixo está o procedimento sistemático de isolamento para identificar e corrig
 * **O Fenômeno:** Caso o LittleFS esteja vazio ou recém-formatado, o firmware carrega as credenciais de rede padrão e tenta se conectar durante **15 segundos** (`TIMEOUT_CONEXAO_STA_MS = 15000`) antes de declarar falha.
 * **O Comportamento:** Durante esses 15 segundos iniciais, o Access Point `IrrigaSolo` ainda não foi aberto. Ele é iniciado exatamente no segundo 16, como mecanismo de *fallback* automático. Aguarde pelo menos 20 segundos antes de verificar a lista de redes Wi-Fi disponíveis.
 
+---
+
+### 6.6. Investigação de Estabilidade: Interferência Eletromagnética e Cargas Indutivas
+
+Durante testes de bancada no módulo relé integrado, observou-se que o acionamento agendado (automático) opera com estabilidade, mas o acionamento manual imediato via mensagem MQTT pode ocasionalmente provocar travamento (*freeze*) ou desconexão Wi-Fi do ESP-01S, mesmo utilizando fonte chaveada de boa qualidade (ex: HI-LINK HLK-PM01 5V a 1A / 5W).
+
+#### Hipóteses Técnicas Levantadas:
+1. **Concorrência Temporal de Carga (Wi-Fi Tx + Chaveamento da Bobina):**
+   * Ao receber um comando MQTT, o rádio Wi-Fi do ESP8266 está em plena atividade (recebendo o pacote e enviando confirmações TCP ACK, demandando picos de 300mA a 430mA).
+   * Se o chaveamento do relé (que demanda cerca de 70mA a 80mA para magnetizar a bobina) ocorre exatamente no mesmo instante, a fonte AC-DC pode apresentar uma resposta transiente lenta (*voltage dip / ripple*), provocando queda momentânea na linha de 3.3V gerada pelo regulador linear AMS1117.
+2. **Interferência Eletromagnética por Proximidade (EMI / Campo Indutivo):**
+   * No módulo relé para ESP-01, o microcontrolador fica encaixado a poucos milímetros de distância diretamente acima da carcaça do relé mecânico e de seus contatos de potência.
+   * O chaveamento de cargas indutivas reais (como a bobina da válvula solenoide de água) gera arcos voltaicos nos contatos do relé e forte emissão de ruído eletromagnético conduzido e irradiado (*back-EMF / kickback indutivo*), que acopla diretamente na antena PCB do ESP-01S e nas linhas de reset/alimentação.
+
+#### Recomendações e Medidas de Contorno (Hardware e Software):
+* **Capacitor de Desacoplamento:** Adicionar um capacitor eletrolítico de baixo ESR (ex: 470µF / 16V) em paralelo com um cerâmico de 100nF diretamente nos bornes de 5V da placa, e um capacitor de 100µF na linha de 3.3V do ESP-01S para absorver transientes.
+* **Circuito Snubber / Diodo de Roda-Livre:** Caso a válvula solenoide seja AC (ex: 24VAC ou 127/220VAC), instalar um filtro Snubber RC (resistor de 100Ω + capacitor de 100nF 400V) em paralelo com os contatos do relé ou com a carga. Se for válvula DC (12VDC), utilizar um diodo em antiparalelo (ex: 1N4007) para absorver a força contra-eletromotriz.
+* **Desacoplamento por Software:** Em vez de atuar no pino físico imediatamente dentro da função de *callback* síncrona do MQTT (`callbackMqtt`), sinalizar uma flag de intenção e efetuar o `digitalWrite` no Super Loop alguns milissegundos após o término da transação de rede.
+
+
 
