@@ -155,8 +155,8 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 23
 
 ## Etapa 24 — Configuração da Plataforma PlatformIO para ESP-01S (`platformio.ini`)
-- [ ] Configurar ambiente `[env:esp01_1m]` com `board = esp01_1m` e mapa LittleFS para 1MB
-- [ ] Validar e comitar a Etapa 24
+- [x] Configurar ambiente `[env:esp01_1m]` com `board = esp01_1m` e mapa LittleFS para 1MB
+- [x] Validar e comitar a Etapa 24
 
 ## Etapa 25 — Atualização das Constantes de Hardware (`include/pinosHardware.h`)
 - [ ] Atualizar pinagem para ESP-01S: `PINO_RELE_CANAL_1 = 0` (GPIO 0, Active HIGH) e `PINO_LED_STATUS = 2` (GPIO 2)
