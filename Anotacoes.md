@@ -293,3 +293,19 @@ Conforme discutido no [fórum oficial do Arduino](https://forum.arduino.cc/t/esp
   1. A primeira instrução executada no `setup()` do firmware configura `pinMode(PINO_RELE_CANAL_1, OUTPUT)` e escreve imediatamente `digitalWrite(PINO_RELE_CANAL_1, LOW)`.
   2. A rotina não-bloqueante `verificarEProtegerEstadoReleFisico()` é executada continuamente no Super Loop. Se o pino físico for encontrado em `HIGH` sem autorização explícita do motor de agendamento ou controle manual, a válvula é desligada imediatamente e o evento espúrio é registrado.
 
+### 6.4. Por que o ESP-01S (1MB) é Mandatório para Suportar Atualizações OTA?
+
+A escolha do **ESP-01S** em vez do ESP-01 clássico é uma decisão técnica de arquitetura motivada pela viabilidade de atualizações remotas (*Over-The-Air*):
+
+1. **A Restrição do ESP-01 Tradicional (512 KB / 4 Mbit):**
+   * Os módulos ESP-01 mais antigos utilizam chips de memória Flash SPI de apenas **512 KB**.
+   * O mecanismo de atualização OTA do ecossistema Arduino/ESP8266 utiliza a estratégia *Two-Bank (A/B)*: enquanto o firmware antigo está em execução na partição primária, o novo binário é gravado integralmente na partição secundária temporária. Somente após a validação de integridade (soma de verificação MD5) o bootloader (*eboot*) inverte os ponteiros de inicialização e reinicia no novo código.
+   * Portanto, em uma Flash de 512 KB, o firmware não pode exceder aproximadamente **240 KB**.
+   * Como o firmware do IrrigaSolo integra as pilhas de Wi-Fi, Servidor Web HTTP, cliente MQTT (PubSubClient), sincronização NTP e parser JSON (ArduinoJson v7), o binário compilado atinge cerca de **443 KB**, tornando o OTA **impossível** no ESP-01 de 512 KB.
+
+2. **A Solução com o ESP-01S (1 MB / 8 Mbit):**
+   * O ESP-01S vem de fábrica com chip Flash de **1 MB (1024 KB)**.
+   * Com o mapa de partição `eagle.flash.1m64.ld` (64 KB para o sistema de arquivos LittleFS e restante para código), a partição total para firmware suporta binários de até aproximadamente 470 KB em modo OTA de duplo banco.
+   * Nosso firmware compilado ocupa **443.235 bytes (46.2%)**, mantendo-se rigorosamente abaixo da margem de 50%, o que garante estabilidade e espaço suficiente para atualizações sem fio transparentes via rota `/update`.
+   * **Manutenção em Campo:** Como o ESP-01S opera acoplado diretamente à placa de relé (muitas vezes em caixas estanques ou quadros elétricos próximos ao jardim), o suporte a OTA elimina a necessidade de desmontar o equipamento, desconectar a fiação de 220V e levar a placa para a bancada para reprogramação cabeada via conversor USB-TTL.
+
