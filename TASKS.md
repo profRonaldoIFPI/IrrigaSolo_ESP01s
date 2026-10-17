@@ -149,10 +149,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 22
 
 ## Etapa 23 — Atualização das Especificações e Arquitetura (`/doc`)
-- [ ] Atualizar `doc/specification.md` (ESP-01S, módulo relé v4.0 em GPIO 0 Active HIGH, remoção do sensor de fluxo RF3 e CA-03)
-- [ ] Atualizar `doc/architecture.md` (ADR-001 para ESP-01S 1MB, registrar ADR-014 para adaptação e remoção do sensor, atualizar ADR-007, ADR-010 e ADR-012)
-- [ ] Atualizar `doc/README.md`
-- [ ] Validar e comitar a Etapa 23
+- [x] Atualizar `doc/specification.md` (ESP-01S, módulo relé v4.0 em GPIO 0 Active HIGH, remoção do sensor de fluxo RF3 e CA-03)
+- [x] Atualizar `doc/architecture.md` (ADR-001 para ESP-01S 1MB, registrar ADR-014 para adaptação e remoção do sensor, atualizar ADR-007, ADR-010 e ADR-012)
+- [x] Atualizar `doc/README.md`
+- [x] Validar e comitar a Etapa 23
 
 ## Etapa 24 — Configuração da Plataforma PlatformIO para ESP-01S (`platformio.ini`)
 - [ ] Configurar ambiente `[env:esp01_1m]` com `board = esp01_1m` e mapa LittleFS para 1MB
