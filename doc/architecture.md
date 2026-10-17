@@ -7,10 +7,12 @@ Este documento descreve as decisões técnicas adotadas para a implementação d
 # ADR-001 - Plataforma e Ecossistema (ESP-01S)
 
 ## Decisão
-Utilizar o framework Arduino sobre o microcontrolador **ESP8266 ESP-01S** (com 1MB de memória Flash SPI) via **PlatformIO** (ambiente `esp01_1m`).
+Utilizar o framework Arduino sobre o microcontrolador **ESP8266 ESP-01S** (com 1MB de memória Flash SPI) via **PlatformIO** (ambiente `esp01_1m`), configurando explicitamente o modo de acesso à Flash SPI como **DOUT** (`board_build.flash_mode = dout`).
 
 ## Motivação
 O ecossistema ESP8266 é maduro, possui excelente suporte da comunidade, compatibilidade nativa com processos OTA e permite a criação de nós de automação ultracompactos de baixo custo. O ESP-01S, acoplado diretamente a um módulo relé dedicado, viabiliza uma solução autônoma com footprint físico mínimo.
+
+A especificação explícita do modo **DOUT** é mandatória porque a grande maioria dos módulos ESP-01S modernos (frequentemente equipados com memórias Flash PUYA ou similares de 1MB) não opera de forma confiável em modo Quad I/O (QIO) durante a leitura do bootloader da ROM. A inicialização em modo QIO padrão resulta em travamento cíclico de reinicialização (*boot loop / crash*), impedindo o microcontrolador de carregar o código de usuário, conectar ao Wi-Fi ou iniciar o Access Point.
 
 ---
 

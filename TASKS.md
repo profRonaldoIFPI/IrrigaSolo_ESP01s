@@ -195,6 +195,14 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Atualizar `TASKS.md` finalizando todas as etapas
 - [x] Validar e comitar a Etapa 30
 
+## Etapa 31 — Modo de Flash SPI DOUT e Guia de Diagnóstico de Boot para ESP-01S
+- [x] Atualizar `doc/architecture.md` (ADR-001) documentando a obrigatoriedade do modo SPI Flash `DOUT` para ESP-01S
+- [x] Configurar `board_build.flash_mode = dout` no `platformio.ini` para evitar crash no boot
+- [x] Atualizar `Anotacoes.md` com seção 6.5 detalhando isolamento de falha no módulo relé (Flash Mode, strapping pin GPIO 0 e corrente de alimentação)
+- [x] Compilar e validar a integridade do binário `firmware.bin` com cabeçalho DOUT (`0x03`)
+- [x] Validar e comitar a Etapa 31
+
+
 
 
 

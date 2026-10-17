@@ -309,3 +309,41 @@ A escolha do **ESP-01S** em vez do ESP-01 clássico é uma decisão técnica de 
    * Nosso firmware compilado ocupa **443.235 bytes (46.2%)**, mantendo-se rigorosamente abaixo da margem de 50%, o que garante estabilidade e espaço suficiente para atualizações sem fio transparentes via rota `/update`.
    * **Manutenção em Campo:** Como o ESP-01S opera acoplado diretamente à placa de relé (muitas vezes em caixas estanques ou quadros elétricos próximos ao jardim), o suporte a OTA elimina a necessidade de desmontar o equipamento, desconectar a fiação de 220V e levar a placa para a bancada para reprogramação cabeada via conversor USB-TTL.
 
+---
+
+### 6.5. Guia de Diagnóstico: "Gravei o Firmware com Sucesso, mas a Placa não Conecta e Nem Entra no Modo AP"
+
+Quando o firmware é gravado com 100% de sucesso pelo `esptool`, mas ao energizar o conjunto a placa não se conecta à rede nem emite o sinal Wi-Fi do Access Point (`IrrigaSolo`), existem **4 causas técnicas clássicas** na arquitetura do ESP8266 acoplado a módulos relé.
+
+Abaixo está o procedimento sistemático de isolamento para identificar e corrigir o problema:
+
+#### 1. Incompatibilidade do Modo de Acesso à Flash SPI (`QIO` vs `DOUT`) — Causa mais provável
+* **O Fenômeno:** Por padrão, ferramentas de compilação como o PlatformIO utilizam o modo `QIO` (Quad I/O) para placas genéricas ESP8266. No entanto, grande parte dos módulos ESP-01S modernos utiliza chips de memória Flash SPI (como PUYA ou clones GigaDevice) que não suportam comunicação de 4 vias na inicialização da ROM do bootloader.
+* **O Sintoma:** A gravação via USB serial conclui com sucesso (pois o `esptool` grava em modo SPI básico). Porém, ao reiniciar, a ROM não consegue ler o código na Flash e o chip entra em um ciclo infinito de reinicializações (*boot loop / crash*). Como o código do Arduino nunca chega a executar a função `setup()`, o Wi-Fi nunca é ativado.
+* **A Solução:** Adicionar explicitamente `board_build.flash_mode = dout` no arquivo `platformio.ini`. O modo **DOUT** (Dual Output) é universalmente compatível com todas as variantes de chips Flash do ESP-01S. O binário gerado passa a conter o byte de controle `0x03` no cabeçalho do bootloader, garantindo inicialização estável.
+
+#### 2. Conflito no Pino de Bootstrapping (GPIO 0 Mantido em Nível LOW pelo Módulo Relé)
+* **O Fenômeno:** No ecossistema ESP8266, o pino **GPIO 0** é um pino especial de *strapping* (seleção de modo de inicialização da CPU):
+  * **GPIO 0 em HIGH no boot:** Inicializa em modo normal executando o código gravado na memória Flash (`boot mode:(3,x)`).
+  * **GPIO 0 em LOW no boot:** O microcontrolador não executa o firmware da Flash; em vez disso, entra em modo *Bootloader UART Download* (`boot mode:(1,x)`), ficando eternamente estático à espera de uma gravação serial.
+* **O Problema no Módulo Relé:** Em várias placas de relé comerciais para ESP-01 (incluindo versões do módulo relé v4.0), o pino GPIO 0 está conectado à base de um transistor ou optoacoplador sem um circuito de pull-up forte o suficiente, ou o próprio circuito puxa o pino para 0V durante o instante de energização.
+* **Procedimento de Teste e Isolamento:**
+  1. Retire o ESP-01S do soquete do módulo relé.
+  2. Insira o ESP-01S no adaptador USB-Serial (garantindo que o pino GPIO 0 **NÃO** esteja aterrado ao GND).
+  3. Conecte à porta USB e aguarde 15 a 20 segundos.
+  4. Abra o leitor de redes Wi-Fi do seu celular ou computador:
+     * **Se a rede `IrrigaSolo` aparecer no adaptador USB:** O firmware está perfeitamente funcional e gravado em DOUT. O culpado comprovado é o hardware do módulo relé segurando o pino GPIO 0 em nível baixo.
+* **Soluções de Hardware se o módulo relé puxar o GPIO 0:**
+  * Soldar um resistor de pull-up externo de 4.7kΩ ou 10kΩ entre o pino GPIO 0 e o pino VCC (3.3V) da placa.
+  * Ou aplicar a modificação de hardware amplamente documentada na comunidade IoT (cortar a trilha de controle do GPIO 0 e jumpear para o pino RX/GPIO 3).
+
+#### 3. Corrente Insuficiente na Alimentação de 5V (Brownout Reset)
+* **O Fenômeno:** O transmissor de rádio Wi-Fi do ESP8266 consome picos transientes entre 300mA e 430mA.
+* **O Sintoma:** A placa tenta inicializar, mas no exato milissegundo em que o rádio Wi-Fi é ligado (no início do `inicializarWifi`), a tensão de 3.3V sofre uma queda brusca (*voltage sag*), acionando o circuito de proteção de subtensão (*Brownout Reset*), reiniciando o microcontrolador antes que o sinal Wi-Fi seja irradiado.
+* **A Solução:** Certifique-se de que a fonte de alimentação de 5V conectada aos bornes do módulo relé tenha capacidade real de fornecer no mínimo 1A (1000mA). Evite alimentar o módulo relé a partir de portas USB não energizadas ou cabos excessivamente longos e finos.
+
+#### 4. Janela de Timeout de Conexão STA (Aguardar 15 Segundos)
+* **O Fenômeno:** Caso o LittleFS esteja vazio ou recém-formatado, o firmware carrega as credenciais de rede padrão e tenta se conectar durante **15 segundos** (`TIMEOUT_CONEXAO_STA_MS = 15000`) antes de declarar falha.
+* **O Comportamento:** Durante esses 15 segundos iniciais, o Access Point `IrrigaSolo` ainda não foi aberto. Ele é iniciado exatamente no segundo 16, como mecanismo de *fallback* automático. Aguarde pelo menos 20 segundos antes de verificar a lista de redes Wi-Fi disponíveis.
+
+
