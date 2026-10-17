@@ -144,6 +144,57 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Desativar o AP de fallback e restaurar estado estrito STA quando o roteador volta a operar
 - [x] Validar compilação com `pio run` e comitar a Etapa 21
 
+## Etapa 22 — Limpeza do Repositório (Remoção da pasta `/migracao`)
+- [x] Confirmar remoção dos arquivos de `/migracao` do Git conforme decisão acordada
+- [x] Validar e comitar a Etapa 22
+
+## Etapa 23 — Atualização das Especificações e Arquitetura (`/doc`)
+- [ ] Atualizar `doc/specification.md` (ESP-01S, módulo relé v4.0 em GPIO 0 Active HIGH, remoção do sensor de fluxo RF3 e CA-03)
+- [ ] Atualizar `doc/architecture.md` (ADR-001 para ESP-01S 1MB, registrar ADR-014 para adaptação e remoção do sensor, atualizar ADR-007, ADR-010 e ADR-012)
+- [ ] Atualizar `doc/README.md`
+- [ ] Validar e comitar a Etapa 23
+
+## Etapa 24 — Configuração da Plataforma PlatformIO para ESP-01S (`platformio.ini`)
+- [ ] Configurar ambiente `[env:esp01_1m]` com `board = esp01_1m` e mapa LittleFS para 1MB
+- [ ] Validar e comitar a Etapa 24
+
+## Etapa 25 — Atualização das Constantes de Hardware (`include/pinosHardware.h`)
+- [ ] Atualizar pinagem para ESP-01S: `PINO_RELE_CANAL_1 = 0` (GPIO 0, Active HIGH) e `PINO_LED_STATUS = 2` (GPIO 2)
+- [ ] Remover definições do sensor de fluxo (`PINO_SENSOR_FLUXO` e `FATOR_CALIBRACAO_FLUXO`)
+- [ ] Atualizar `include/README.md`
+- [ ] Validar e comitar a Etapa 25
+
+## Etapa 26 — Remoção do Módulo do Sensor de Fluxo (`src` e `include`)
+- [ ] Remover `include/sensorFluxo.h` e `src/sensorFluxo.cpp`
+- [ ] Remover funções de persistência de volume em `include/persistencia.h` e `src/persistencia.cpp`
+- [ ] Atualizar `include/README.md` e `src/README.md`
+- [ ] Validar e comitar a Etapa 26
+
+## Etapa 27 — Refatoração da Telemetria e Comandos MQTT (`clienteMqtt`)
+- [ ] Remover referências e métricas de fluxo/volume do payload JSON de telemetria MQTT em `src/clienteMqtt.cpp`
+- [ ] Remover o tratamento do comando remoto `ZERAR`
+- [ ] Atualizar `include/clienteMqtt.h`
+- [ ] Validar e comitar a Etapa 27
+
+## Etapa 28 — Refatoração do Servidor Web e Templates HTML (`servidorWeb`, `index.html`)
+- [ ] Remover `vazao` e `volume` de `/api/status` e remover rota `/api/zerar-volume` em `src/servidorWeb.cpp`
+- [ ] Remover cards/displays de vazão e volume em `include/templates/index.html`
+- [ ] Executar script gerador `html2c.py` para atualizar `include/index.h`
+- [ ] Validar e comitar a Etapa 28
+
+## Etapa 29 — Integração do `main.cpp` e Proteção Anti-Ruído para GPIO 0
+- [ ] Remover chamadas de inicialização e processamento do sensor de fluxo em `src/main.cpp`
+- [ ] Garantir inicialização segura do relé em `setup()` para GPIO 0 (Active HIGH)
+- [ ] Ajustar proteção anti-ruído para monitorar GPIO 0 em `src/agendador.cpp` e `include/agendador.h`
+- [ ] Validar e comitar a Etapa 29
+
+## Etapa 30 — Validação da Compilação, Testes e Documentação Geral
+- [ ] Compilar projeto completo via `pio run` para ambiente `esp01_1m`
+- [ ] Atualizar `README.md` da raiz com as informações do ESP-01S e pinagem
+- [ ] Atualizar `Anotacoes.md` com instruções de gravação via adaptador USB-Serial para ESP-01S
+- [ ] Atualizar `TASKS.md` finalizando todas as etapas
+- [ ] Validar e comitar a Etapa 30
+
 
 
 
