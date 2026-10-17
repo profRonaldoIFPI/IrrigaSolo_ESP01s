@@ -1,12 +1,17 @@
 #pragma once
 
 /**
- * pinosHardware.h — Definições de Pinos e Constantes de Hardware
+ * pinosHardware.h — Definições de Pinos e Constantes de Hardware (ESP-01S)
  *
- * Este header centraliza todas as constantes relacionadas ao hardware físico
- * do sistema IrrigaSolo. Alterar um pino GPIO ou um valor padrão aqui reflete
- * automaticamente em todo o firmware, evitando "números mágicos" espalhados
- * pelo código.
+ * Este header centraliza todas as constantes de pinagem e parâmetros operacionais
+ * do sistema IrrigaSolo adaptado para o microcontrolador ESP8266 ESP-01S.
+ * 
+ * Contexto de Hardware do ESP-01S:
+ * O ESP-01S expõe apenas 8 pinos físicos: VCC, GND, RST, CH_PD (EN), TX (GPIO1),
+ * RX (GPIO3), GPIO0 e GPIO2.
+ * - GPIO0: Linha conectada ao chaveamento do relé (módulo relé v4.0 para ESP-01S).
+ * - GPIO2: Conectado ao LED onboard azul do ESP-01S (lógica invertida).
+ * - Sensor de fluxo: Descontinuado nesta variante por falta de pinos livres (ADR-014).
  *
  * Convenção de nomenclatura: SCREAMING_SNAKE_CASE para constantes e macros.
  */
@@ -14,38 +19,36 @@
 #include <Arduino.h>
 
 // ---------------------------------------------------------------------------
-// Pinos dos Relés (ADR-007: devem ser configurados como OUTPUT e LOW
-// imediatamente no início do setup(), antes de qualquer outra inicialização)
+// Pinos de Controle Físico (ADR-007 e ADR-014)
 // ---------------------------------------------------------------------------
 
 /**
- * Canal 1 conectado ao pino D1 (GPIO5) do NodeMCU.
- * Escolhido por ser um pino seguro: não afeta o boot do ESP8266
- * e não possui funções especiais de inicialização.
+ * Pino de controle do relé da válvula de irrigação.
+ * No módulo relé v4.0 para ESP-01S, o relé é acionado pelo GPIO 0
+ * através de um transistor NPN (lógica Active HIGH).
  */
-static const uint8_t PINO_RELE_CANAL_1 = D1; // GPIO5
+static const uint8_t PINO_RELE_CANAL_1 = 0; // GPIO0
 
 /**
- * Pino de sinal do sensor de fluxo de água YF-S201B.
- * Conectado ao pino D5 (GPIO14) do NodeMCU.
- * Suporta interrupções externas de forma estável.
+ * Níveis lógicos de acionamento do relé (Active HIGH no módulo relé v4.0).
  */
-static const uint8_t PINO_SENSOR_FLUXO = D5; // GPIO14
+static const uint8_t ESTADO_RELE_LIGADO    = HIGH;
+static const uint8_t ESTADO_RELE_DESLIGADO = LOW;
 
 /**
- * Fator de calibração do sensor de fluxo YF-S201B.
- * Frequência de pulsos (Hz) = 7.5 * Vazão (L/min).
- */
-static const float FATOR_CALIBRACAO_FLUXO = 7.5f;
-
-/**
- * LED onboard do NodeMCU (D4 / GPIO2).
+ * Pino do LED onboard do ESP-01S (GPIO2).
  * Utilizado como indicador visual de status da conexão Wi-Fi:
- *   - Piscando = Modo AP (aguardando configuração)
- *   - Fixo (ligado) = Conectado à rede STA
- * Nota: O LED onboard do ESP8266 opera em lógica invertida (LOW = aceso).
+ *   - Piscando = Modo AP (aguardando configuração ou reconexão)
+ *   - Fixo (ligado) = Conectado à rede STA local
+ * Nota: O LED onboard do ESP-01S opera em lógica invertida (LOW = aceso).
  */
-static const uint8_t PINO_LED_STATUS = D4; // GPIO2
+static const uint8_t PINO_LED_STATUS = 2; // GPIO2
+
+/**
+ * Níveis lógicos do LED onboard do ESP-01S (Active LOW).
+ */
+static const uint8_t ESTADO_LED_LIGADO    = LOW;
+static const uint8_t ESTADO_LED_DESLIGADO = HIGH;
 
 // ---------------------------------------------------------------------------
 // Número de Canais de Irrigação
@@ -78,7 +81,7 @@ static const uint32_t INTERVALO_NTP_PADRAO = 21600;
 
 // ---------------------------------------------------------------------------
 // Intervalo do Scheduler (ADR-005: Super Loop polling)
-// Granularidade de 1 segundo para ativar no minuto exato (RF1.1).
+// Granularidade de 1 segundo para avaliar o minuto exato de ativação.
 // ---------------------------------------------------------------------------
 static const uint32_t INTERVALO_AVALIACAO_MS = 1000;
 
@@ -99,7 +102,6 @@ static const uint32_t INTERVALO_LED_AP_MS = 500;
 static const uint32_t VELOCIDADE_SERIAL = 115200;
 
 // ---------------------------------------------------------------------------
-// Versão do Firmware IrrigaSolo
+// Versão do Firmware IrrigaSolo para ESP-01S
 // ---------------------------------------------------------------------------
-static const char VERSAO_FIRMWARE[] = "v1.2";
-
+static const char VERSAO_FIRMWARE[] = "v2.0-esp01s";

@@ -159,10 +159,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 24
 
 ## Etapa 25 — Atualização das Constantes de Hardware (`include/pinosHardware.h`)
-- [ ] Atualizar pinagem para ESP-01S: `PINO_RELE_CANAL_1 = 0` (GPIO 0, Active HIGH) e `PINO_LED_STATUS = 2` (GPIO 2)
-- [ ] Remover definições do sensor de fluxo (`PINO_SENSOR_FLUXO` e `FATOR_CALIBRACAO_FLUXO`)
-- [ ] Atualizar `include/README.md`
-- [ ] Validar e comitar a Etapa 25
+- [x] Atualizar pinagem para ESP-01S: `PINO_RELE_CANAL_1 = 0` (GPIO 0, Active HIGH) e `PINO_LED_STATUS = 2` (GPIO 2)
+- [x] Remover definições do sensor de fluxo (`PINO_SENSOR_FLUXO` e `FATOR_CALIBRACAO_FLUXO`)
+- [x] Atualizar `include/README.md`
+- [x] Validar e comitar a Etapa 25
 
 ## Etapa 26 — Remoção do Módulo do Sensor de Fluxo (`src` e `include`)
 - [ ] Remover `include/sensorFluxo.h` e `src/sensorFluxo.cpp`
