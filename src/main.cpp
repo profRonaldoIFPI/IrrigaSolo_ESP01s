@@ -1,23 +1,29 @@
 /**
- * main.cpp — Ponto de Entrada do Firmware IrrigaSolo
+ * main.cpp — Ponto de Entrada do Firmware IrrigaSolo (ESP-01S)
  *
- * Orquestra a inicialização e o Super Loop principal do sistema.
+ * Orquestra a inicialização e o Super Loop principal do sistema adaptado
+ * para o microcontrolador ESP8266 ESP-01S integrado ao módulo relé v4.0.
  *
- * Sequência de inicialização (ADR-007):
- *   1. inicializarReles()       → GPIO LOW imediato (CA-01)
- *   2. Serial.begin()           → Telemetria (ADR-008)
- *   3. inicializarLittleFS()    → Sistema de arquivos
- *   4. carregarConfiguracoes()  → /network.json + /irrigation.json
- *   5. inicializarWifi()        → STA ou fallback AP (RF2)
- *   6. inicializarNtp()         → Sincronização de relógio (RF1.2)
- *   7. inicializarServidor()    → Servidor HTTP na porta 80
+ * Sequência de inicialização (ADR-007, ADR-014):
+ *   1. inicializarReles()       → GPIO 0 em LOW imediato e GPIO 2 apagado (CA-01)
+ *   2. Serial.begin()           → Telemetria Serial a 115200 bps (ADR-008)
+ *   3. inicializarLittleFS()    → Sistema de arquivos LittleFS (1MB Flash)
+ *   4. carregarConfiguracoes()  → /network.json + /irrigation.json (ADR-004)
+ *   5. inicializarWifi()        → Conexão STA com fallback AP (RF2, ADR-013)
+ *   6. inicializarNtp()         → Sincronização de relógio via NTP (RF1.2)
+ *   7. inicializarMqtt()        → Cliente MQTT não-bloqueante (RF5, ADR-010)
+ *   8. inicializarServidor()    → Servidor HTTP na porta 80 e rota OTA /update
+ *   9. inicializarAutovigilancia() → Watchdog e proteção contra travamentos
  *
  * Super Loop (loop):
+ *   - verificarEProtegerEstadoReleFisico() → Auto-verificação anti-ruído elétrico
  *   - processarRequisicoes()    → Atende clientes HTTP
- *   - verificarConexaoWifi()    → Monitora STA, fallback AP
+ *   - verificarConexaoWifi()    → Monitora STA e reconexão periódica
  *   - atualizarNtp()            → Resincroniza relógio
- *   - avaliarAgendamentos()     → Polling a cada 1s (ADR-005)
- * Requisitos atendidos: Todos (canal único, sensor de fluxo e MQTT).
+ *   - processarMqtt()           → Processa fila e reconexão MQTT
+ *   - processarAutovigilancia() → Watchdog de heap e reset de 24h
+ *   - avaliarAgendamentos()     → Polling a cada 1s do motor de irrigação
+ *   - publicarTelemetria()      → Publicação periódica de estado via MQTT
  */
 
 #include "pinosHardware.h"
@@ -27,7 +33,6 @@
 #include "relogioNtp.h"
 #include "agendador.h"
 #include "servidorWeb.h"
-#include "sensorFluxo.h"
 #include "clienteMqtt.h"
 #include "autovigilancia.h"
 
@@ -57,8 +62,8 @@ static bool irrigacaoConfiguradaComSucesso = false;
 
 void setup() {
     // -----------------------------------------------------------------------
-    // PASSO 1: Segurança elétrica — Relés em LOW ANTES de tudo (ADR-007, CA-01)
-    // Garante que flutuações de GPIO durante o boot não acionem a válvula.
+    // PASSO 1: Segurança elétrica — Relé em LOW ANTES de tudo (ADR-007, CA-01)
+    // Garante que flutuações de boot no GPIO 0 não acionem a válvula.
     // -----------------------------------------------------------------------
     inicializarReles();
 
@@ -68,7 +73,7 @@ void setup() {
     Serial.begin(VELOCIDADE_SERIAL);
     Serial.println();
     Serial.println(F("========================================"));
-    Serial.println(F("  IrrigaSolo v1.1 — Inicializando..."));
+    Serial.println(F("  IrrigaSolo ESP-01S — Inicializando..."));
     Serial.println(F("========================================"));
 
     // -----------------------------------------------------------------------
@@ -100,22 +105,17 @@ void setup() {
     inicializarNtp(configRede);
 
     // -----------------------------------------------------------------------
-    // PASSO 7: Sensor de Fluxo — Anexar interrupção de hardware (ADR-006, RF3)
-    // -----------------------------------------------------------------------
-    inicializarSensorFluxo();
-
-    // -----------------------------------------------------------------------
-    // PASSO 8: MQTT — Inicializar cliente (ADR-010, ADR-012, RF5)
+    // PASSO 7: MQTT — Inicializar cliente (ADR-010, ADR-012, RF5)
     // -----------------------------------------------------------------------
     inicializarMqtt(configRede, &configIrrigacao);
 
     // -----------------------------------------------------------------------
-    // PASSO 9: Servidor Web HTTP (última inicialização)
+    // PASSO 8: Servidor Web HTTP (última inicialização)
     // -----------------------------------------------------------------------
     inicializarServidor(&configRede, &configIrrigacao);
 
     // -----------------------------------------------------------------------
-    // PASSO 10: Autovigilância (Watchdog de resiliência contra travamentos)
+    // PASSO 9: Autovigilância (Watchdog de resiliência contra travamentos)
     // -----------------------------------------------------------------------
     inicializarAutovigilancia();
 
@@ -140,9 +140,6 @@ void loop() {
 
     // Atualizar relógio NTP (o cliente gerencia o intervalo internamente)
     atualizarNtp();
-
-    // Processar o cálculo do sensor de fluxo de forma assíncrona (RF3.1, RF3.2)
-    processarSensorFluxo();
 
     // Processar loop de conexão e escuta do MQTT (RF5.2)
     processarMqtt();
@@ -172,6 +169,6 @@ void loop() {
         obterUltimaIrrigacao(configIrrigacao, minutoAtual, ultimaIrrigacao, sizeof(ultimaIrrigacao));
         obterProximaIrrigacao(configIrrigacao, minutoAtual, proximaIrrigacao, sizeof(proximaIrrigacao));
 
-        publicarTelemetria(obterEstadoRele(1), obterVazaoLMin(), obterVolumeTotalL(), ultimaIrrigacao, proximaIrrigacao);
+        publicarTelemetria(obterEstadoRele(1), ultimaIrrigacao, proximaIrrigacao);
     }
 }

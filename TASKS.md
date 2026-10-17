@@ -183,10 +183,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 28
 
 ## Etapa 29 — Integração do `main.cpp` e Proteção Anti-Ruído para GPIO 0
-- [ ] Remover chamadas de inicialização e processamento do sensor de fluxo em `src/main.cpp`
-- [ ] Garantir inicialização segura do relé em `setup()` para GPIO 0 (Active HIGH)
-- [ ] Ajustar proteção anti-ruído para monitorar GPIO 0 em `src/agendador.cpp` e `include/agendador.h`
-- [ ] Validar e comitar a Etapa 29
+- [x] Remover chamadas de inicialização e processamento do sensor de fluxo em `src/main.cpp`
+- [x] Garantir inicialização segura do relé em `setup()` para GPIO 0 (Active HIGH)
+- [x] Ajustar proteção anti-ruído para monitorar GPIO 0 em `src/agendador.cpp` e `include/agendador.h`
+- [x] Validar e comitar a Etapa 29
 
 ## Etapa 30 — Validação da Compilação, Testes e Documentação Geral
 - [ ] Compilar projeto completo via `pio run` para ambiente `esp01_1m`

@@ -83,11 +83,11 @@ static bool estadoAutorizadoAtual = false;
 void inicializarReles() {
     // ADR-007: Esta é a primeira ação do setup().
     // Configurar como OUTPUT e forçar LOW antes de qualquer outra
-    // inicialização, garantindo que flutuações de boot não acionem
+    // inicialização, garantindo que flutuações de boot no GPIO 0 não acionem
     // a válvula solenoide (CA-01).
 
     pinMode(PINO_RELE_CANAL_1, OUTPUT);
-    digitalWrite(PINO_RELE_CANAL_1, LOW);
+    digitalWrite(PINO_RELE_CANAL_1, ESTADO_RELE_DESLIGADO);
     estadoAutorizadoAtual = false;
 }
 
@@ -96,11 +96,11 @@ uint32_t obterContadorDisparosEspurios() {
 }
 
 void verificarEProtegerEstadoReleFisico() {
-    // Se o pino físico estiver HIGH (ligado), mas o firmware não autorizou este acionamento (RF6.3, CA-08)
-    if (digitalRead(PINO_RELE_CANAL_1) == HIGH && !estadoAutorizadoAtual) {
-        digitalWrite(PINO_RELE_CANAL_1, LOW);
+    // Se o pino físico estiver no estado ligado mas sem autorização do firmware (RF6.3, CA-08)
+    if (digitalRead(PINO_RELE_CANAL_1) == ESTADO_RELE_LIGADO && !estadoAutorizadoAtual) {
+        digitalWrite(PINO_RELE_CANAL_1, ESTADO_RELE_DESLIGADO);
         disparosEspuriosCount++;
-        Serial.print(F("[ERROR] Disparo espúrio por ruído elétrico detectado no GPIO! Válvula desligada imediatamente. Total de disparos espúrios: "));
+        Serial.print(F("[ERROR] Disparo espúrio por ruído elétrico detectado no GPIO 0! Válvula desligada imediatamente. Total de disparos espúrios: "));
         Serial.println(disparosEspuriosCount);
     }
 }
@@ -196,9 +196,9 @@ void controleManual(uint8_t canal, bool estado) {
  */
 static void setarEstadoReleFisico(bool ligado) {
     estadoAutorizadoAtual = ligado;
-    bool estadoAnterior = (digitalRead(PINO_RELE_CANAL_1) == HIGH);
+    bool estadoAnterior = (digitalRead(PINO_RELE_CANAL_1) == ESTADO_RELE_LIGADO);
     
-    digitalWrite(PINO_RELE_CANAL_1, ligado ? HIGH : LOW);
+    digitalWrite(PINO_RELE_CANAL_1, ligado ? ESTADO_RELE_LIGADO : ESTADO_RELE_DESLIGADO);
     
     // Se a válvula acabou de ligar (transição de desligado para ligado)
     if (!estadoAnterior && ligado) {
@@ -216,7 +216,7 @@ bool obterEstadoRele(uint8_t canal) {
     if (pino == 0xFF) {
         return false;
     }
-    return digitalRead(pino) == HIGH;
+    return digitalRead(pino) == ESTADO_RELE_LIGADO;
 }
 
 void obterProximaIrrigacao(const ConfiguracaoIrrigacao &config, int minutoAtual, char *buffer, size_t maxLen) {
