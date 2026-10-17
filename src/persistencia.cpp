@@ -43,7 +43,6 @@
 // ---------------------------------------------------------------------------
 static const char CAMINHO_NETWORK[]    = "/network.json";
 static const char CAMINHO_IRRIGATION[] = "/irrigation.json";
-static const char CAMINHO_VOLUME[]     = "/volume.json";
 
 // ---------------------------------------------------------------------------
 // Funções auxiliares internas
@@ -297,61 +296,5 @@ bool salvarConfiguracaoIrrigacao(const ConfiguracaoIrrigacao& configIrrigacao) {
     }
 
     Serial.println(F("[INFO] /irrigation.json salvo com sucesso."));
-    return true;
-}
-
-bool carregarVolumeAcumulado(float& volume) {
-    if (!LittleFS.exists(CAMINHO_VOLUME)) {
-        Serial.println(F("[WARN] /volume.json não encontrado. Inicializando com 0.0 Litros."));
-        volume = 0.0f;
-        return false;
-    }
-
-    File arquivo = LittleFS.open(CAMINHO_VOLUME, "r");
-    if (!arquivo) {
-        Serial.println(F("[ERROR] Falha ao abrir /volume.json para leitura."));
-        volume = 0.0f;
-        return false;
-    }
-
-    JsonDocument documento;
-    DeserializationError erro = deserializeJson(documento, arquivo);
-    arquivo.close();
-
-    if (erro) {
-        Serial.print(F("[ERROR] Falha ao parsear /volume.json: "));
-        Serial.println(erro.c_str());
-        volume = 0.0f;
-        return false;
-    }
-
-    volume = documento["volume"] | 0.0f;
-    Serial.print(F("[INFO] Volume acumulado carregado da Flash: "));
-    Serial.print(volume);
-    Serial.println(F(" L"));
-    return true;
-}
-
-bool salvarVolumeAcumulado(float volume) {
-    JsonDocument documento;
-    documento["volume"] = volume;
-
-    File arquivo = LittleFS.open(CAMINHO_VOLUME, "w");
-    if (!arquivo) {
-        Serial.println(F("[ERROR] Falha ao abrir /volume.json para escrita."));
-        return false;
-    }
-
-    size_t bytesEscritos = serializeJson(documento, arquivo);
-    arquivo.close();
-
-    if (bytesEscritos == 0) {
-        Serial.println(F("[ERROR] Falha ao serializar /volume.json (0 bytes escritos)."));
-        return false;
-    }
-
-    Serial.print(F("[INFO] Volume acumulado salvo na Flash com sucesso: "));
-    Serial.print(volume);
-    Serial.println(F(" L"));
     return true;
 }

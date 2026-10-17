@@ -165,10 +165,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 25
 
 ## Etapa 26 — Remoção do Módulo do Sensor de Fluxo (`src` e `include`)
-- [ ] Remover `include/sensorFluxo.h` e `src/sensorFluxo.cpp`
-- [ ] Remover funções de persistência de volume em `include/persistencia.h` e `src/persistencia.cpp`
-- [ ] Atualizar `include/README.md` e `src/README.md`
-- [ ] Validar e comitar a Etapa 26
+- [x] Remover `include/sensorFluxo.h` e `src/sensorFluxo.cpp`
+- [x] Remover funções de persistência de volume em `include/persistencia.h` e `src/persistencia.cpp`
+- [x] Atualizar `include/README.md` e `src/README.md`
+- [x] Validar e comitar a Etapa 26
 
 ## Etapa 27 — Refatoração da Telemetria e Comandos MQTT (`clienteMqtt`)
 - [ ] Remover referências e métricas de fluxo/volume do payload JSON de telemetria MQTT em `src/clienteMqtt.cpp`
