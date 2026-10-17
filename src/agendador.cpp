@@ -76,6 +76,11 @@ static bool manualOverrideActive = false;
 static bool manualOverrideState  = false;
 static unsigned long tempoInicioManualMs = 0; // Armazena timestamp de acionamento manual (RF1.4)
 
+// Variáveis para desacoplamento assíncrono do acionamento do relé (ADR-015)
+static bool acionamentoPendente = false;
+static bool estadoPendente = false;
+static unsigned long tempoSolicitacaoAcionamentoMs = 0;
+
 // Variáveis para auto-verificação e proteção contra disparos espúrios por ruído elétrico (RF6.3, ADR-012)
 static uint32_t disparosEspuriosCount = 0;
 static bool estadoAutorizadoAtual = false;
@@ -162,6 +167,12 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao& configIrrigacao, int minut
         }
     }
 
+    // ADR-015: Se houver acionamento manual pendente aguardando a janela de desacoplamento,
+    // não permite que o agendador periódico sobrescreva o estado do relé antes do tempo.
+    if (acionamentoPendente) {
+        return;
+    }
+
     // Grava no pino físico o estado de override ou o agendado
     bool estadoFinal = manualOverrideActive ? manualOverrideState : canal1DeveEstarLigado;
     setarEstadoReleFisico(estadoFinal);
@@ -183,11 +194,30 @@ void controleManual(uint8_t canal, bool estado) {
         tempoInicioManualMs = millis(); // Registra o início do temporizador de segurança
     }
 
-    setarEstadoReleFisico(estado);
+    // ADR-015: Desacoplamento assíncrono do acionamento físico do relé.
+    // Em vez de efetuar digitalWrite síncrono imediatamente dentro do callback MQTT/HTTP,
+    // registra a intenção e agenda o chaveamento físico para ocorrer no Super Loop
+    // após uma janela de proteção de 150ms.
+    acionamentoPendente = true;
+    estadoPendente = estado;
+    tempoSolicitacaoAcionamentoMs = millis();
 
-    Serial.print(F("[INFO] Override manual ativado — Canal "));
+    Serial.print(F("[INFO] Override manual registrado — Canal "));
     Serial.print(canal);
-    Serial.println(estado ? F(": LIGADO") : F(": DESLIGADO"));
+    Serial.print(estado ? F(": LIGADO") : F(": DESLIGADO"));
+    Serial.print(F(" (chaveamento físico agendado em "));
+    Serial.print(ATRASO_DESACOPLAMENTO_RELE_MS);
+    Serial.println(F(" ms)"));
+}
+
+void processarAcionamentoRele() {
+    // ADR-015: Executa o chaveamento físico do relé após a expiração da janela de desacoplamento
+    if (acionamentoPendente && (millis() - tempoSolicitacaoAcionamentoMs >= ATRASO_DESACOPLAMENTO_RELE_MS)) {
+        acionamentoPendente = false;
+        setarEstadoReleFisico(estadoPendente);
+        Serial.print(F("[INFO] Acionamento desacoplado do relé executado no pino físico GPIO 0: "));
+        Serial.println(estadoPendente ? F("LIGADO") : F("DESLIGADO"));
+    }
 }
 
 /**
@@ -198,15 +228,18 @@ static void setarEstadoReleFisico(bool ligado) {
     estadoAutorizadoAtual = ligado;
     bool estadoAnterior = (digitalRead(PINO_RELE_CANAL_1) == ESTADO_RELE_LIGADO);
     
-    digitalWrite(PINO_RELE_CANAL_1, ligado ? ESTADO_RELE_LIGADO : ESTADO_RELE_DESLIGADO);
-    
-    // Se a válvula acabou de ligar (transição de desligado para ligado)
-    if (!estadoAnterior && ligado) {
-        String horaCompleta = obterHoraFormatada(); // Retorna "HH:MM:SS"
-        if (horaCompleta.length() >= 5) {
-            strlcpy(horarioUltimaIrrigacaoRAM, horaCompleta.c_str(), 6);
-            Serial.print(F("[INFO] Válvula ligada. Horário registrado na RAM: "));
-            Serial.println(horarioUltimaIrrigacaoRAM);
+    // Escrever no pino apenas se houver mudança de estado para evitar chaveamento redundante
+    if (ligado != estadoAnterior) {
+        digitalWrite(PINO_RELE_CANAL_1, ligado ? ESTADO_RELE_LIGADO : ESTADO_RELE_DESLIGADO);
+        
+        // Se a válvula acabou de ligar (transição de desligado para ligado)
+        if (!estadoAnterior && ligado) {
+            String horaCompleta = obterHoraFormatada(); // Retorna "HH:MM:SS"
+            if (horaCompleta.length() >= 5) {
+                strlcpy(horarioUltimaIrrigacaoRAM, horaCompleta.c_str(), 6);
+                Serial.print(F("[INFO] Válvula ligada. Horário registrado na RAM: "));
+                Serial.println(horarioUltimaIrrigacaoRAM);
+            }
         }
     }
 }
@@ -215,6 +248,11 @@ bool obterEstadoRele(uint8_t canal) {
     uint8_t pino = obterPinoDoCanal(canal);
     if (pino == 0xFF) {
         return false;
+    }
+    // ADR-015: Se houver comando manual pendente na janela de desacoplamento,
+    // retorna a intenção solicitada para imediata responsividade da UI/telemetria.
+    if (acionamentoPendente) {
+        return estadoPendente;
     }
     return digitalRead(pino) == ESTADO_RELE_LIGADO;
 }

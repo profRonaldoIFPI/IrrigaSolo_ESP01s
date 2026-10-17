@@ -17,6 +17,7 @@
  *
  * Super Loop (loop):
  *   - verificarEProtegerEstadoReleFisico() → Auto-verificação anti-ruído elétrico
+ *   - processarAcionamentoRele() → Desacoplamento assíncrono do relé (ADR-015)
  *   - processarRequisicoes()    → Atende clientes HTTP
  *   - verificarConexaoWifi()    → Monitora STA e reconexão periódica
  *   - atualizarNtp()            → Resincroniza relógio
@@ -131,6 +132,9 @@ void setup() {
 void loop() {
     // Auto-verificação imediata do pino contra disparos espúrios por ruído elétrico (RF6.3, CA-08)
     verificarEProtegerEstadoReleFisico();
+
+    // ADR-015: Processar chaveamento físico do relé com desacoplamento assíncrono (protege Wi-Fi contra EMI)
+    processarAcionamentoRele();
 
     // Atender requisições HTTP pendentes
     processarRequisicoes();

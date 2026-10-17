@@ -13,7 +13,7 @@ Este diretório contém os arquivos de cabeçalho (`.h`) com declarações de fu
 | [persistencia.h](persistencia.h) | Interface do módulo de persistência LittleFS (configurações de rede, MQTT e irrigação). |
 | [redeWifi.h](redeWifi.h) | Interface do módulo de gerenciamento Wi-Fi (AP/STA com fallback e auto-reconexão). |
 | [relogioNtp.h](relogioNtp.h) | Interface do módulo de sincronização NTP. |
-| [agendador.h](agendador.h) | Interface do motor de agendamento (Scheduler) e proteção anti-ruído elétrico no GPIO 0. |
+| [agendador.h](agendador.h) | Interface do motor de agendamento (Scheduler), desacoplamento assíncrono do relé (ADR-015) e proteção anti-ruído no GPIO 0. |
 | [servidorWeb.h](servidorWeb.h) | Interface do servidor web embarcado (HTTP REST e OTA). |
 | [clienteMqtt.h](clienteMqtt.h) | Interface de publicação e callback do cliente MQTT (telemetria, reboot e agendamentos). |
 | [autovigilancia.h](autovigilancia.h) | Interface do watchdog de heap, rádio Wi-Fi, motivo de reset e reset diário de 24h. |

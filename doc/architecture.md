@@ -201,3 +201,23 @@ Adaptar a arquitetura física do projeto para o módulo **ESP-01S** integrado di
 
 ### Motivação
 Permitir a construção de um atuador de irrigação ultracompacto e de baixo custo utilizando o popular conjunto ESP-01S + módulo relé, adequando a lógica de negócio às restrições estritas de pinagem do componente.
+
+---
+
+# ADR-015 - Desacoplamento Assíncrono do Acionamento Físico do Relé (Proteção contra Concorrência Wi-Fi/EMI)
+
+### Decisão
+O acionamento manual do relé (seja requisitado via comando MQTT ou via API HTTP REST) não deve efetuar a escrita física no pino GPIO 0 (`digitalWrite`) de forma síncrona dentro da função de callback de rede.
+
+Em vez disso:
+1. A função de controle registra a intenção de estado (`manualOverrideState = estado`), ativa o override manual e sinaliza uma flag de acionamento pendente com timestamp `millis()`.
+2. A rotina não-bloqueante `processarAcionamentoRele()` é invocada continuamente a cada iteração do Super Loop em `main.cpp`.
+3. O chaveamento físico do pino GPIO 0 é executado somente após decorrida uma janela de desacoplamento temporal de 150 ms (`ATRASO_DESACOPLAMENTO_MS`).
+
+### Motivação
+No microcontrolador ESP-01S montado diretamente sobre a placa de relé:
+1. O rádio Wi-Fi consome picos de corrente de até 430mA durante a recepção de pacotes e envio de confirmações TCP ACK.
+2. A energização ou desenergização da bobina do relé demanda corrente súbita (~80mA) e a carga indutiva da válvula solenoide gera ruído eletromagnético transitório (*back-EMF / kickback indutivo*).
+3. Se a bobina for acionada no exato microsegundo em que o rádio Wi-Fi está respondendo ao pacote de rede, a concorrência de picos de corrente na fonte e a irradiação eletromagnética sobre a antena PCB podem provocar queda de tensão (*voltage sag*) ou corrupção de registradores no modem Wi-Fi, causando desconexão da rede ou travamento do ESP8266.
+4. O atraso não-bloqueante de 150ms assegura que a transação TCP/MQTT termine e o transmissor Wi-Fi volte ao estado ocioso antes que o choque elétrico do relé aconteça.
+

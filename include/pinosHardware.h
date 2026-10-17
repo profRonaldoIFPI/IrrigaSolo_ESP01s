@@ -97,6 +97,14 @@ static const uint32_t TIMEOUT_CONEXAO_STA_MS = 15000;
 static const uint32_t INTERVALO_LED_AP_MS = 500;
 
 // ---------------------------------------------------------------------------
+// Atraso de Desacoplamento Assíncrono do Relé (ADR-015)
+// Janela de espera não-bloqueante (em milissegundos) entre o recebimento de
+// comandos de rede (MQTT/HTTP) e o chaveamento físico no GPIO 0, permitindo
+// que as transmissões RF do Wi-Fi finalizem antes do choque indutivo do relé.
+// ---------------------------------------------------------------------------
+static const uint32_t ATRASO_DESACOPLAMENTO_RELE_MS = 150;
+
+// ---------------------------------------------------------------------------
 // Velocidade da porta Serial para telemetria (ADR-008)
 // ---------------------------------------------------------------------------
 static const uint32_t VELOCIDADE_SERIAL = 115200;

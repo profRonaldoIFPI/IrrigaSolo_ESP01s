@@ -9,7 +9,7 @@ Este diretório é a **fonte única de verdade** (*Single Source of Truth*) para
 | Arquivo | Responsabilidade |
 |---|---|
 | [specification.md](specification.md) | Requisitos funcionais (RF1–RF7) e critérios de aceitação (CA-01–CA-09) para a variante ESP-01S. |
-| [architecture.md](architecture.md) | Registro de Decisões Arquiteturais (ADR-001 a ADR-014), documentando a migração para o ESP-01S, descontinuação do sensor de fluxo e pinagem segura. |
+| [architecture.md](architecture.md) | Registro de Decisões Arquiteturais (ADR-001 a ADR-015), documentando a migração para o ESP-01S, descontinuação do sensor de fluxo, pinagem segura e desacoplamento assíncrono do relé. |
 
 ## Dependências / Relações
 
@@ -21,7 +21,7 @@ flowchart TD
     DOC -->|"Define requisitos ESP-01S"| CODE["💻 /src + /include"]
     DOC -->|"Valida implementação"| TEST["🧪 /test"]
     CODE -->|"Deve atender"| CA["✅ Critérios de Aceitação"]
-    CODE -->|"Deve respeitar"| ADR["📐 Decisões Arquiteturais (ADR-001 a ADR-014)"]
+    CODE -->|"Deve respeitar"| ADR["📐 Decisões Arquiteturais (ADR-001 a ADR-015)"]
 ```
 
 > **Para estudantes:** Sempre leia estes documentos antes de analisar o código. Eles explicam o "porquê" de cada decisão técnica (como a escolha dos pinos GPIO 0 e GPIO 2 no ESP-01S), enquanto o código mostra o "como".

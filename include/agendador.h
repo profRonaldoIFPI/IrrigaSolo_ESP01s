@@ -58,6 +58,16 @@ void avaliarAgendamentos(const ConfiguracaoIrrigacao &configIrrigacao,
 void controleManual(uint8_t canal, bool estado);
 
 /**
+ * Processa acionamentos físicos pendentes com desacoplamento assíncrono (ADR-015).
+ *
+ * Deve ser chamada a cada iteração do Super Loop. Se houver um comando manual
+ * pendente (recebido via MQTT ou HTTP), aguarda o término da janela de
+ * desacoplamento (ATRASO_DESACOPLAMENTO_RELE_MS) antes de acionar fisicamente
+ * o pino GPIO 0, protegendo o rádio Wi-Fi contra surtos indutivos e afundamentos de tensão.
+ */
+void processarAcionamentoRele();
+
+/**
  * Retorna o estado atual (HIGH/LOW) de um relé.
  * Inline para eliminar overhead no polling do loop().
  *

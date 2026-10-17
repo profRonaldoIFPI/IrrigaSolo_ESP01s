@@ -12,7 +12,7 @@ Este diretório contém os arquivos de implementação (`.cpp`) do firmware Irri
 | [persistencia.cpp](persistencia.cpp) | Leitura/escrita de configurações JSON no LittleFS (`/network.json` e `/irrigation.json`, ADR-004). |
 | [redeWifi.cpp](redeWifi.cpp) | Gerenciamento de Wi-Fi AP/STA com fallback e reconexão periódica assíncrona (RF2, ADR-013). |
 | [relogioNtp.cpp](relogioNtp.cpp) | Sincronização NTP e formatação de data/hora (RF1.2). |
-| [agendador.cpp](agendador.cpp) | Motor de agendamento, proteção térmica fracionada da solenoide, controle manual e proteção anti-ruído no GPIO 0 (ADR-005, ADR-011, ADR-012). |
+| [agendador.cpp](agendador.cpp) | Motor de agendamento, proteção térmica fracionada da solenoide, controle manual com desacoplamento assíncrono (ADR-015) e proteção anti-ruído no GPIO 0 (ADR-005, ADR-011, ADR-012). |
 | [servidorWeb.cpp](servidorWeb.cpp) | Servidor HTTP com endpoints RESTful, OTA `/update` e páginas servidas via PROGMEM (ADR-002, ADR-009). |
 | [clienteMqtt.cpp](clienteMqtt.cpp) | Publicação de telemetria, tópicos dedicados de reboot e agendamentos, e recepção assíncrona de comandos (ADR-010, ADR-012). |
 | [autovigilancia.cpp](autovigilancia.cpp) | Watchdog de heap, auto-recuperação do rádio Wi-Fi, motivo de reset e reset preventivo de 24h. |
@@ -51,3 +51,17 @@ flowchart TD
     F --> G["disparosEspuriosCount++"]
     G --> H["Registro de Log ERROR na Serial"]
 ```
+
+### Fluxo de Desacoplamento Assíncrono do Relé (ADR-015)
+
+```mermaid
+flowchart TD
+    CMD["Comando de Rede (MQTT / HTTP)"] --> REG["controleManual(): Registra intenção e ativa acionamentoPendente"]
+    REG --> RET["Retorna imediatamente (libera callback e socket TCP)"]
+    RET --> LOOP["Super Loop (loop em main.cpp)"]
+    LOOP --> PROC["processarAcionamentoRele()"]
+    PROC --> TEST{"Passaram 150 ms?<br>(ATRASO_DESACOPLAMENTO_RELE_MS)"}
+    TEST -- "Não" --> LOOP
+    TEST -- "Sim" --> WRITE["setarEstadoReleFisico(): Chaveia pino GPIO 0 de forma segura"]
+```
+

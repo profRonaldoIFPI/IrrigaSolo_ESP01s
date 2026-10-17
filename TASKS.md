@@ -202,6 +202,16 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Compilar e validar a integridade do binário `firmware.bin` com cabeçalho DOUT (`0x03`)
 - [x] Validar e comitar a Etapa 31
 
+## Etapa 32 — Desacoplamento Assíncrono do Acionamento Físico do Relé (Software)
+- [x] Atualizar `doc/architecture.md` registrando ADR-015 para desacoplamento de chaveamento do relé (150ms)
+- [x] Atualizar `doc/README.md` com referência ao ADR-015
+- [x] Declarar constante `ATRASO_DESACOPLAMENTO_RELE_MS` em `include/pinosHardware.h`
+- [x] Declarar `processarAcionamentoRele()` em `include/agendador.h`
+- [x] Implementar controle manual não-bloqueante e temporização de 150ms em `src/agendador.cpp`
+- [x] Integrar `processarAcionamentoRele()` no Super Loop em `src/main.cpp`
+- [x] Atualizar diagramas e documentação de `/src` e `/include`
+- [x] Compilar com `pio run` e comitar a Etapa 32
+
 ---
 
 ## Backlog / Tarefas Futuras — Investigação de Hardware e Estabilidade Elétrica
@@ -210,7 +220,8 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
   - [ ] Analisar transientes de tensão (*voltage sag* / ripple) na linha de 3.3V quando o relé é ativado no exato instante em que o rádio Wi-Fi está respondendo pacotes TCP/MQTT.
   - [ ] Testar adição de capacitores de desacoplamento (ex: 470µF de baixo ESR na entrada 5V e 100µF no barramento 3.3V do ESP-01S).
   - [ ] Avaliar necessidade de circuito snubber RC ou diodo flyback/supressor de transientes (TVS/MOV) na carga da válvula solenoide.
-  - [ ] Avaliar desacoplamento de software: agendar o acionamento físico do relé via flag assíncrona no Super Loop em vez de executar o `digitalWrite` imediatamente no contexto síncrono da callback `callbackMqtt`.
+  - [x] Implementar desacoplamento de software: agendar o acionamento físico do relé via flag assíncrona no Super Loop (150ms) em vez de executar o `digitalWrite` imediatamente no contexto síncrono da callback `callbackMqtt` (ADR-015).
+
 
 
 
