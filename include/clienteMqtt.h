@@ -40,12 +40,10 @@ void processarMqtt();
  * Publica os dados de telemetria instantâneos no broker MQTT.
  *
  * @param valvulaLigada true se a válvula está ativa (relé HIGH), false caso contrário.
- * @param vazaoLMin Vazão instantânea medida em litros/minuto.
- * @param volumeTotalL Volume acumulado de água em litros.
  * @param ultimaIrrigacao Horário de início da última rega ("HH:MM").
  * @param proximaIrrigacao Horário de início da próxima rega ("HH:MM").
  */
-void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL, const char* ultimaIrrigacao, const char* proximaIrrigacao);
+void publicarTelemetria(bool valvulaLigada, const char* ultimaIrrigacao, const char* proximaIrrigacao);
 
 /**
  * Publica o anúncio de reboot contendo motivo do reset, uptime e disparos espúrios

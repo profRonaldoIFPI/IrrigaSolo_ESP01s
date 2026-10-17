@@ -171,10 +171,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 26
 
 ## Etapa 27 — Refatoração da Telemetria e Comandos MQTT (`clienteMqtt`)
-- [ ] Remover referências e métricas de fluxo/volume do payload JSON de telemetria MQTT em `src/clienteMqtt.cpp`
-- [ ] Remover o tratamento do comando remoto `ZERAR`
-- [ ] Atualizar `include/clienteMqtt.h`
-- [ ] Validar e comitar a Etapa 27
+- [x] Remover referências e métricas de fluxo/volume do payload JSON de telemetria MQTT em `src/clienteMqtt.cpp`
+- [x] Remover o tratamento do comando remoto `ZERAR`
+- [x] Atualizar `include/clienteMqtt.h`
+- [x] Validar e comitar a Etapa 27
 
 ## Etapa 28 — Refatoração do Servidor Web e Templates HTML (`servidorWeb`, `index.html`)
 - [ ] Remover `vazao` e `volume` de `/api/status` e remover rota `/api/zerar-volume` em `src/servidorWeb.cpp`

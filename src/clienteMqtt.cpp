@@ -1,6 +1,5 @@
 #include "clienteMqtt.h"
 #include "agendador.h"
-#include "sensorFluxo.h"
 #include "autovigilancia.h"
 #include "persistencia.h"
 #include <ESP8266WiFi.h>
@@ -127,8 +126,6 @@ static void callbackMqtt(char* topic, byte* payload, unsigned int length) {
         controleManual(1, true);
     } else if (strcmp(payloadStr, "DESLIGAR") == 0) {
         controleManual(1, false);
-    } else if (strcmp(payloadStr, "ZERAR") == 0) {
-        zerarVolumeTotal();
     } else if (strcmp(payloadStr, "AGENDAMENTOS") == 0 || strcmp(payloadStr, "OBTER_AGENDAMENTOS") == 0) {
         publicarAgendamentos();
     } else if (strcmp(payloadStr, "REBOOT") == 0 || strcmp(payloadStr, "RESET") == 0) {
@@ -219,7 +216,7 @@ void processarMqtt() {
     }
 }
 
-void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL, const char* ultimaIrrigacao, const char* proximaIrrigacao) {
+void publicarTelemetria(bool valvulaLigada, const char* ultimaIrrigacao, const char* proximaIrrigacao) {
     if (!mqttClient.connected()) {
         return;
     }
@@ -232,16 +229,14 @@ void publicarTelemetria(bool valvulaLigada, float vazaoLMin, float volumeTotalL,
     uint32_t chipId = ESP.getChipId();
     uint32_t disparosEspurios = obterContadorDisparosEspurios();
 
-    // Buffer estático expandido para evitar fragmentação e suportar a carga de telemetria expandida (embedded-constraints.md)
+    // Buffer estático para suportar a carga de telemetria (embedded-constraints.md)
     char payloadJson[512];
     snprintf(payloadJson, sizeof(payloadJson),
-             "{\"id\":\"%s\",\"chip_id\":%u,\"ip\":\"%d.%d.%d.%d\",\"valvula\":\"%s\",\"vazao\":%.2f,\"volume\":%.2f,\"ultima_irrigacao\":\"%s\",\"proxima_irrigacao\":\"%s\",\"uptime\":%u,\"rssi\":%d,\"heap_livre\":%u,\"motivo_reset\":\"%s\",\"disparos_espurios\":%u}",
+             "{\"id\":\"%s\",\"chip_id\":%u,\"ip\":\"%d.%d.%d.%d\",\"valvula\":\"%s\",\"ultima_irrigacao\":\"%s\",\"proxima_irrigacao\":\"%s\",\"uptime\":%u,\"rssi\":%d,\"heap_livre\":%u,\"motivo_reset\":\"%s\",\"disparos_espurios\":%u}",
              configRedeLocal.mqttClientId,
              chipId,
              ip[0], ip[1], ip[2], ip[3],
              valvulaLigada ? "LIGADA" : "DESLIGADA",
-             vazaoLMin,
-             volumeTotalL,
              ultimaIrrigacao,
              proximaIrrigacao,
              tempoOnline,
