@@ -1,6 +1,5 @@
 #include "autovigilancia.h"
 #include "agendador.h"
-#include "sensorFluxo.h"
 #include <ESP8266WiFi.h>
 
 // ---------------------------------------------------------------------------

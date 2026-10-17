@@ -189,11 +189,11 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 29
 
 ## Etapa 30 — Validação da Compilação, Testes e Documentação Geral
-- [ ] Compilar projeto completo via `pio run` para ambiente `esp01_1m`
-- [ ] Atualizar `README.md` da raiz com as informações do ESP-01S e pinagem
-- [ ] Atualizar `Anotacoes.md` com instruções de gravação via adaptador USB-Serial para ESP-01S
-- [ ] Atualizar `TASKS.md` finalizando todas as etapas
-- [ ] Validar e comitar a Etapa 30
+- [x] Compilar projeto completo via `pio run` para ambiente `esp01_1m`
+- [x] Atualizar `README.md` da raiz com as informações do ESP-01S e pinagem
+- [x] Atualizar `Anotacoes.md` com instruções de gravação via adaptador USB-Serial para ESP-01S
+- [x] Atualizar `TASKS.md` finalizando todas as etapas
+- [x] Validar e comitar a Etapa 30
 
 
 

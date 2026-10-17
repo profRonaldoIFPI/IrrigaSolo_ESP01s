@@ -253,3 +253,43 @@ As portas seriais como `/dev/ttyUSB0` pertencem ao grupo `dialout` (ou `uucp` em
 3. **Verificação rápida**:
    Você pode verificar se o seu usuário já faz parte do grupo executando o comando `groups` no terminal. Ele deve listar `dialout` entre as opções.
 
+---
+
+## 6. Guia Prático de Gravação e Operação do ESP-01S com Módulo Relé ⚡
+
+O **ESP8266 ESP-01S** é um módulo ultracompacto que apresenta particularidades elétricas fundamentais para seu correto funcionamento e gravação:
+
+### 6.1. Pinagem e Comportamento dos Pinos no Boot
+
+O ESP-01S possui apenas 8 pinos:
+* **VCC (3.3V) e GND:** Alimentação. Atenção: O ESP-01S requer picos de corrente de até 300mA durante transmissões de rádio Wi-Fi. Nunca alimente o chip diretamente com saídas de 3.3V de conversores USB-TTL genéricos sem regulador adequado.
+* **CH_PD / EN:** Pino de habilitação do chip. No modelo ESP-01S, possui resistor de pull-up interno soldado na própria placa (ao contrário do ESP-01 clássico).
+* **RST:** Pino de reset (ativo em nível baixo).
+* **TX (GPIO 1) e RX (GPIO 3):** Comunicação serial a 115200 bps.
+* **GPIO 0:** Pino de controle do relé. No boot, o ESP8266 inspeciona este pino:
+  * Se estiver em **HIGH**: Inicializa normalmente executando o firmware da memória Flash SPI.
+  * Se estiver em **LOW**: Entra no modo *Bootloader UART Download* para receber novo código.
+* **GPIO 2:** Conectado ao LED onboard azul do ESP-01S. Opera em lógica invertida (**LOW = aceso**, **HIGH = apagado**).
+
+### 6.2. Como Gravar o Firmware via Adaptador USB-Serial (FTDI / CH340)
+
+Para gravar o ESP-01S pela primeira vez:
+1. Conecte TX do adaptador ao RX do ESP-01S, e RX do adaptador ao TX do ESP-01S.
+2. Conecte GND comum e VCC a 3.3V (com regulador estável).
+3. **Colocar em modo Bootloader:** Antes de energizar a placa, conecte o pino **GPIO 0 ao GND**. Energize o circuito.
+4. Execute o comando de compilação e upload:
+   ```bash
+   /home/rpb/.platformio/penv/bin/pio run -e esp01_1m --target upload
+   ```
+5. Desconecte o GPIO 0 do GND e reinicie a placa. O firmware inicializará em modo de execução normal.
+6. A partir deste ponto, novas versões do firmware podem ser atualizadas sem fios via **OTA** acessando a rota `http://<IP_DO_ESP01>/update`.
+
+### 6.3. Problema do Pulso de Inicialização no Relé e Solução
+
+Conforme discutido no [fórum oficial do Arduino](https://forum.arduino.cc/t/esp01-modulo-rele-problemas-na-inicializacao/1320931):
+* No boot inicial do ESP8266, a ROM de inicialização pode apresentar pequenas flutuações de tensão no GPIO 0 antes de o código do usuário executar.
+* No módulo relé v4.0 com transistor NPN, o acionamento do relé ocorre quando o pino está em **HIGH**.
+* Para mitigar disparos espúrios e ruídos de chaveamento elétrico no mundo real:
+  1. A primeira instrução executada no `setup()` do firmware configura `pinMode(PINO_RELE_CANAL_1, OUTPUT)` e escreve imediatamente `digitalWrite(PINO_RELE_CANAL_1, LOW)`.
+  2. A rotina não-bloqueante `verificarEProtegerEstadoReleFisico()` é executada continuamente no Super Loop. Se o pino físico for encontrado em `HIGH` sem autorização explícita do motor de agendamento ou controle manual, a válvula é desligada imediatamente e o evento espúrio é registrado.
+

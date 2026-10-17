@@ -1,6 +1,6 @@
-# IrrigaSolo 🌱
+# IrrigaSolo 🌱 (Variante ESP-01S)
 
-Sistema de irrigação automatizado baseado em agendamento de horários e controle via interface web local, utilizando microcontrolador ESP8266 (NodeMCU) com conectividade Wi-Fi.
+Sistema de irrigação automatizado baseado em agendamento de horários, controle via interface web local e monitoramento/controle remoto via protocolo MQTT, adaptado para o microcontrolador **ESP8266 ESP-01S** integrado a um módulo de relé dedicado.
 
 O nome **IrrigaSolo** reflete seu duplo propósito: cuidar do **solo** e operar de forma autônoma (**solo**).
 
@@ -8,71 +8,116 @@ O nome **IrrigaSolo** reflete seu duplo propósito: cuidar do **solo** e operar 
 
 ## Objetivo
 
-Este projeto foi desenvolvido como material de estudo para estudantes de tecnologia interessados em:
+Este projeto foi desenvolvido como material didático para estudantes de tecnologia e pesquisadores interessados em:
 
-- **Sistemas Embarcados:** Programação de microcontroladores com restrições reais de memória e processamento.
-- **IoT (Internet das Coisas):** Comunicação Wi-Fi, servidores web embarcados e sincronização de tempo via NTP.
-- **Automação Residencial:** Controle de válvulas solenoides para irrigação de jardins.
+- **Sistemas Embarcados com Restrições Severas:** Otimização para microcontroladores compactos com 1MB de Flash e número reduzido de GPIOs (ESP-01S).
+- **IoT (Internet das Coisas):** Conectividade Wi-Fi com portal de configuração de fallback (AP/STA), cliente MQTT assíncrono para telemetria/comandos e sincronização de tempo via NTP.
+- **Automação Residencial Segura:** Acionamento de válvula solenoide com proteção térmica fracionada, auto-verificação anti-ruído elétrico no pino do relé e atualizações de firmware sem fio (OTA).
 
-## Componentes de Hardware
+---
 
-| Componente | Descrição |
-|---|---|
-| NodeMCU ESP-12E (v0.9) | Microcontrolador com Wi-Fi integrado |
-| Módulo Relé 2 Canais | Isolamento optoacoplado para acionamento seguro |
-| 2× Válvula Solenoide 220V | Tipo máquina de lavar (normalmente fechada) |
-| Fonte 5V | Alimentação do NodeMCU e relés |
+## Componentes de Hardware e Pinagem
+
+| Componente | Pino no ESP-01S | Descrição |
+|---|---|---|
+| **ESP8266 ESP-01S** | — | Módulo com 1MB de memória Flash SPI (board `esp01_1m`) |
+| **Módulo Relé 1 Canal v4.0** | **GPIO 0** | Acionamento da válvula solenoide via transistor NPN (Active HIGH: `HIGH` = Ligado, `LOW` = Desligado) |
+| **LED Indicador de Status** | **GPIO 2** | LED azul onboard do ESP-01S (Active LOW: `LOW` = Aceso, `HIGH` = Apagado) |
+| **Válvula Solenoide** | — | Válvula 220V/127V (tipo máquina de lavar roupas) |
+| **Fonte de Alimentação** | — | Fonte DC 5V (alimenta a bobina do relé e o regulador de 3.3V do ESP-01S) |
+
+> **Nota Arquitetural (ADR-014):** Devido à limitação física de pinos do ESP-01S, o sensor de fluxo presente em protótipos anteriores com NodeMCU foi descontinuado nesta variante. O controle do consumo de água é baseado estritamente na gestão precisa do tempo de irrigação.
+
+---
 
 ## Estrutura do Projeto
 
 ```
-IrrigacaoJardins/
-├── doc/            # Especificação e decisões arquiteturais (ADRs)
-├── include/        # Headers (.h), HTMLs e definições de hardware
-├── lib/            # Bibliotecas externas (gerenciadas pelo PlatformIO)
-├── src/            # Código-fonte principal do firmware
-├── test/           # Testes unitários
-├── html2c.py       # Script de build: converte HTML → PROGMEM
-├── platformio.ini  # Configuração do PlatformIO
-└── TASKS.md        # Quadro de tarefas e progresso
+IrrigaSolo/
+├── doc/                     # Fonte única de verdade: especificação (RF/CA) e arquitetura (ADRs)
+├── include/                 # Headers C++ (.h) e gerador de templates
+│   └── templates/           # Código-fonte HTML/CSS/JS e script html2c.py
+├── lib/                     # Bibliotecas locais ou gerenciadas pelo PlatformIO
+├── src/                     # Implementações modulares do firmware em C++
+├── test/                    # Estrutura de testes
+├── platformio.ini           # Configuração do ambiente esp01_1m (LittleFS 1MB)
+├── TASKS.md                 # Quadro de planejamento e histórico incremental de tarefas
+└── Anotacoes.md             # Notas técnicas e guia de gravação USB-Serial
 ```
 
-## Arquitetura
+---
 
-O sistema opera em **Super Loop** (polling) com módulos desacoplados:
+## Arquitetura de Execução
+
+O firmware opera sob a filosofia de **Super Loop Não-Bloqueante** (ADR-005) em conjunto com a sequência de inicialização segura (ADR-007):
 
 ```mermaid
 flowchart TD
-    A["Boot (setup)"] --> B["Relés → LOW (segurança)"]
-    B --> C["LittleFS: Carregar configs"]
-    C --> D["Wi-Fi: Conectar STA ou AP"]
-    D --> E["NTP: Sincronizar relógio"]
-    E --> F["Servidor Web: Iniciar"]
-    F --> G["Super Loop (loop)"]
-    G --> H{"A cada 1s"}
-    H -->|Sim| I["Avaliar agendamentos"]
-    H -->|Não| J["Atender requisições HTTP"]
-    J --> K["Verificar conexão Wi-Fi"]
-    K --> L["Atualizar NTP"]
-    L --> G
-    I --> G
+    subgraph Inicialização ["setup() — Sequência Segura (ADR-007)"]
+        A["1. Relé em LOW (GPIO 0 seguro)"] --> B["2. Serial.begin(115200)"]
+        B --> C["3. Montar LittleFS (1MB Flash)"]
+        C --> D["4. Carregar /network.json e /irrigation.json"]
+        D --> E["5. Wi-Fi (STA ou Fallback AP)"]
+        E --> F["6. NTP (Sincronização de Relógio)"]
+        F --> G["7. MQTT (Conexão Assíncrona)"]
+        G --> H["8. Servidor Web & OTA /update"]
+        H --> I["9. Autovigilância / Watchdog"]
+    end
+
+    subgraph SuperLoop ["loop() — Super Loop Não-Bloqueante"]
+        I --> J["Proteção Anti-Ruído no GPIO 0"]
+        J --> K["Atender Requisições Web (HTTP)"]
+        K --> L["Auto-Recuperação Wi-Fi (a cada 20s)"]
+        L --> M["Atualizar NTP Client"]
+        M --> N["Processar Mensagens MQTT"]
+        N --> O["Vigilância de Heap e Reset 24h"]
+        O --> P{"A cada 1s"}
+        P -->|Sim| Q["Avaliar Agendamentos (Scheduler)"]
+        P -->|Não| R{"A cada N seg"}
+        Q --> R
+        R -->|Sim| S["Publicar Telemetria MQTT"]
+        R -->|Não| J
+        S --> J
+    end
 ```
 
-## Como Compilar
+---
+
+## Como Compilar e Gravar
+
+### 1. Compilação do Firmware
+Certifique-se de ter o PlatformIO instalado:
 
 ```bash
-# Via PlatformIO CLI
-pio run -e nodemcu
-
-# Upload para o hardware
-pio run -e nodemcu --target upload
+# Compilar firmware para ESP-01S (1MB)
+pio run -e esp01_1m
 ```
 
-## Documentação Completa
+### 2. Gravação Cabeada (USB-Serial)
+O ESP-01S requer um adaptador USB-Serial (FTDI, CP2102 ou CH340) configurado para **3.3V**:
+1. Conecte o pino **GPIO 0 ao GND** durante a energização para entrar em modo *Bootloader / UART Download*.
+2. Execute o comando de gravação:
+```bash
+pio run -e esp01_1m --target upload
+```
+3. Desconecte o GPIO 0 do GND e reinicie a placa para executar o firmware em modo normal.
 
-- [Especificação Funcional](doc/specification.md)
-- [Decisões Arquiteturais (ADRs)](doc/architecture.md)
+### 3. Atualização Remota (OTA)
+Após a primeira gravação cabeada, atualizações subsequentes podem ser realizadas sem fios:
+- Acesse `http://<IP_DO_DISPOSITIVO>/update` pelo navegador.
+- Selecione o arquivo `.pio/build/esp01_1m/firmware.bin` gerado na compilação e confirme o envio.
+
+---
+
+## Documentação Detalhada
+
+- [Especificação de Requisitos e Critérios de Aceitação](doc/specification.md)
+- [Registro de Decisões Arquiteturais (ADRs)](doc/architecture.md)
+- [Quadro de Tarefas Incremental](TASKS.md)
+- [Anotações Técnicas e Soluções de Hardware](Anotacoes.md)
+
+---
 
 ## Licença
 
-Projeto educacional de uso livre.
+Projeto acadêmico e educacional de uso livre sob licença MIT/Open Source.
