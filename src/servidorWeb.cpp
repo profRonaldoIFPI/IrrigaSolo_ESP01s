@@ -23,7 +23,6 @@
 #include "agendador.h"
 #include "redeWifi.h"
 #include "relogioNtp.h"
-#include "sensorFluxo.h"
 #include "clienteMqtt.h"
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
@@ -80,8 +79,6 @@ static void handleApiStatus() {
     documento["ip"]              = obterIpAtual();
     documento["mqttConnected"]   = obterEstadoConexaoMqtt();
     documento["c1State"]         = obterEstadoRele(1);
-    documento["vazao"]           = obterVazaoLMin();
-    documento["volume"]          = obterVolumeTotalL();
     documento["firmwareVersion"] = VERSAO_FIRMWARE;
 
     char buffer[384];
@@ -109,15 +106,6 @@ static void handleApiControl() {
     }
 
     controleManual(canal, estado);
-    servidor.send(200, "application/json", "{\"ok\":true}");
-}
-
-/**
- * POST /api/zerar
- * Reseta o acumulador de volume do sensor de fluxo de água (RF3.3).
- */
-static void handleApiZerarVolume() {
-    zerarVolumeTotal();
     servidor.send(200, "application/json", "{\"ok\":true}");
 }
 
@@ -349,7 +337,6 @@ void inicializarServidor(ConfiguracaoRede* configRede, ConfiguracaoIrrigacao* co
     // API de status e controle
     servidor.on("/api/status",  HTTP_GET,  handleApiStatus);
     servidor.on("/api/control", HTTP_POST, handleApiControl);
-    servidor.on("/api/zerar",   HTTP_POST, handleApiZerarVolume);
 
     // API de agendamentos
     servidor.on("/api/schedules", HTTP_GET,  handleApiGetSchedules);

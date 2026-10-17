@@ -361,7 +361,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <div class="container">
         <header>
             <h1 id="titulo_dashboard">IrrigaSolo</h1>
-            <div class="subtitle" id="subtitulo_dashboard">Painel de Controle de Irrigação</div>
+            <div class="subtitle" id="subtitulo_dashboard">Painel de Controle de Irrigação (ESP-01S)</div>
         </header>
 
         <!-- Relógio do Sistema -->
@@ -390,11 +390,10 @@ const char index_html[] PROGMEM = R"rawliteral(
             </div>
         </div>
 
-        <!-- Controle da Válvula & Medição -->
+        <!-- Controle da Válvula -->
         <div class="card" id="card_controles">
-            <h3 class="control-title">Controle & Medição</h3>
+            <h3 class="control-title">Controle da Válvula</h3>
 
-            <!-- Válvula -->
             <div class="channel-control" id="controle_c1">
                 <div class="channel-info">
                     <span class="channel-name">Válvula de Irrigação</span>
@@ -404,22 +403,6 @@ const char index_html[] PROGMEM = R"rawliteral(
                 <div class="btn-group">
                     <button class="btn-on" id="btn_c1_ligar" onclick="controlarCanal(1, 1)">Ligar</button>
                     <button class="btn-off" id="btn_c1_desligar" onclick="controlarCanal(1, 0)">Desligar</button>
-                </div>
-            </div>
-
-            <!-- Medições de Fluxo (RF3) -->
-            <div class="flow-display" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                <div class="status-row">
-                    <span class="status-label">Vazão Instantânea</span>
-                    <span class="status-value" id="val_vazao" style="font-weight: bold;">0.00 L/min</span>
-                </div>
-                <div class="status-row">
-                    <span class="status-label">Volume Acumulado</span>
-                    <span class="status-value" id="val_volume" style="font-weight: bold;">0.00 Litros</span>
-                </div>
-                <div style="text-align: right; margin-top: 10px;">
-                    <button class="nav-btn" style="padding: 6px 12px; font-size: 0.85em; background-color: #d9534f;"
-                        onclick="zerarVolume()">Zerar Volume</button>
                 </div>
             </div>
         </div>
@@ -475,10 +458,6 @@ const char index_html[] PROGMEM = R"rawliteral(
                         statusC1.innerText = 'Desligado';
                         statusC1.className = 'status-off';
                     }
-
-                    // Atualizar dados do sensor de fluxo
-                    document.getElementById('val_vazao').innerText = (dados.vazao !== undefined ? dados.vazao.toFixed(2) : '0.00') + ' L/min';
-                    document.getElementById('val_volume').innerText = (dados.volume !== undefined ? dados.volume.toFixed(2) : '0.00') + ' Litros';
                 })
                 .catch(function (erro) { console.error('Erro ao obter status:', erro); });
         }
@@ -497,23 +476,6 @@ const char index_html[] PROGMEM = R"rawliteral(
                     }
                 })
                 .catch(function (erro) { console.error('Erro no controle manual:', erro); });
-        }
-
-        /**
-         * Zera o volume acumulado de água via POST /api/zerar.
-         */
-        function zerarVolume() {
-            if (confirm('Deseja realmente zerar o volume acumulado de água?')) {
-                fetch('/api/zerar', { method: 'POST' })
-                    .then(function (resposta) {
-                        if (resposta.ok) {
-                            atualizarStatus();
-                        } else {
-                            alert('Erro ao zerar volume.');
-                        }
-                    })
-                    .catch(function (erro) { console.error('Erro ao zerar volume:', erro); });
-            }
         }
 
         // Polling a cada 2 segundos para atualização em tempo real

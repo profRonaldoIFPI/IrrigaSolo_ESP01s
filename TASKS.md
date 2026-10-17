@@ -177,10 +177,10 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] Validar e comitar a Etapa 27
 
 ## Etapa 28 — Refatoração do Servidor Web e Templates HTML (`servidorWeb`, `index.html`)
-- [ ] Remover `vazao` e `volume` de `/api/status` e remover rota `/api/zerar-volume` em `src/servidorWeb.cpp`
-- [ ] Remover cards/displays de vazão e volume em `include/templates/index.html`
-- [ ] Executar script gerador `html2c.py` para atualizar `include/index.h`
-- [ ] Validar e comitar a Etapa 28
+- [x] Remover `vazao` e `volume` de `/api/status` e remover rota `/api/zerar-volume` em `src/servidorWeb.cpp`
+- [x] Remover cards/displays de vazão e volume em `include/templates/index.html`
+- [x] Executar script gerador `html2c.py` para atualizar `include/index.h`
+- [x] Validar e comitar a Etapa 28
 
 ## Etapa 29 — Integração do `main.cpp` e Proteção Anti-Ruído para GPIO 0
 - [ ] Remover chamadas de inicialização e processamento do sensor de fluxo em `src/main.cpp`
