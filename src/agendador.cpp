@@ -194,6 +194,14 @@ void controleManual(uint8_t canal, bool estado) {
         tempoInicioManualMs = millis(); // Registra o início do temporizador de segurança
     }
 
+    // TODO: Investigar e solucionar travamento do ESP-01S ao ser acionado manualmente.
+    // O microcontrolador está congelando/reiniciando no momento em que a válvula é comandada manualmente.
+    // Hipóteses técnicas para pesquisa e diagnóstico posterior:
+    // 1) Brownout / Afundamento de Tensão: Pico de corrente no chaveamento da bobina do relé na linha 3.3V/5V.
+    // 2) Ruído Indutivo (EMI): Transiente eletromagnético da bobina/carga acoplando no pino GPIO 0.
+    // 3) Desacoplamento Físico: Necessidade de capacitor eletrolítico (100uF-470uF) + 100nF entre VCC e GND do ESP-01S.
+    // 4) Watchdog Timer (WDT): Verificar se há laço ou interrupção associada ao chaveamento.
+
     // ADR-015: Desacoplamento assíncrono do acionamento físico do relé.
     // Em vez de efetuar digitalWrite síncrono imediatamente dentro do callback MQTT/HTTP,
     // registra a intenção e agenda o chaveamento físico para ocorrer no Super Loop

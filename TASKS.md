@@ -218,17 +218,9 @@ Cada etapa concluída recebe um commit isolado conforme o padrão do projeto.
 - [x] **Investigar travamento e desconexão ocasional do ESP-01S no acionamento do relé via MQTT (fonte HI-LINK 5V 1A):**
   - [x] Implementar e validar desacoplamento de software: agendar o acionamento físico do relé via flag assíncrona no Super Loop (150ms) em vez de executar o `digitalWrite` imediatamente no contexto síncrono da callback `callbackMqtt` (ADR-015) — **Testado e validado em bancada com sucesso!**
   - [ ] (Opcional/Hardware) Avaliar capacitores de desacoplamento adicionais ou circuito snubber caso cargas indutivas industriais de alta potência venham a ser conectadas aos contatos do relé no futuro.
-
-
-
-
-
-
-
-
-
-
-
-
-
+- [ ] **// TODO: Investigar e solucionar travamento do ESP-01S ao ser acionado manualmente:**
+  - [ ] Capturar logs de reinicialização/crash via monitor serial (`pio device monitor`) no momento exato do acionamento manual.
+  - [ ] Analisar estabilidade da linha de alimentação de 3.3V (queda de tensão provocada pela bobina do relé / brownout).
+  - [ ] Avaliar necessidade de capacitor eletrolítico de desacoplamento (100 µF a 470 µF) e cerâmico (100 nF) em paralelo direto nos pinos VCC e GND do ESP-01S.
+  - [ ] Testar isolamento ótico e comportamento do pino de strapping GPIO 0 durante a comutação manual.
 

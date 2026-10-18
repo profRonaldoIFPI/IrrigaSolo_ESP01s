@@ -365,5 +365,15 @@ Durante testes de bancada no módulo relé integrado, observou-se que o acioname
 * **Circuito Snubber / Diodo de Roda-Livre:** Caso a válvula solenoide seja AC (ex: 24VAC ou 127/220VAC), instalar um filtro Snubber RC (resistor de 100Ω + capacitor de 100nF 400V) em paralelo com os contatos do relé ou com a carga. Se for válvula DC (12VDC), utilizar um diodo em antiparalelo (ex: 1N4007) para absorver a força contra-eletromotriz.
 * **Desacoplamento por Software:** Em vez de atuar no pino físico imediatamente dentro da função de *callback* síncrona do MQTT (`callbackMqtt`), sinalizar uma flag de intenção e efetuar o `digitalWrite` no Super Loop alguns milissegundos após o término da transação de rede.
 
+---
 
+### 6.7. Ocorrência em Produção (17/10/2026): Travamento no Acionamento Manual
+
+* **Sintoma Relatado:** Ao acionar manualmente a válvula do Irrigador Quintal (ESP-01S, IP `192.168.1.26`), o microcontrolador apresenta travamento / congelamento.
+* **Status:** Registrada anotação `// TODO` em `src/agendador.cpp` e nova tarefa aberta no Backlog do `TASKS.md` para diagnóstico posterior.
+* **Plano de Investigação:**
+  1. Conectar monitor serial (`pio device monitor`) para capturar o dump de exceção (*Stack Trace / Exception / WDT Reset*) no momento exato do clique de acionamento manual.
+  2. Medir com osciloscópio/multímetro a linha de 3.3V do regulador da placa de relé durante o chaveamento para detectar *voltage sag*.
+  3. Testar a adição de capacitor eletrolítico de desacoplamento (220µF a 470µF) + cerâmico (100nF) soldado diretamente nos pinos VCC e GND do módulo ESP-01S.
+  4. Analisar se o acionamento do transistor do relé afeta o nível lógico do pino GPIO 0 durante o chaveamento, provocando comportamento espúrio.
 
